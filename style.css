@@ -207,6 +207,8 @@ nav {
 
 .project-card p {
     flex-grow: 1; /* Allows p to take up space to align footers */
+    font-size: 0.9rem; /* Smaller font size for description */
+    color: #6c757d; /* Lighter text color */
 }
 
 .project-image {
