@@ -81,7 +81,6 @@
         <section id="projects" class="py-20 md:py-28 bg-gray-50">
             <div class="container mx-auto px-6">
                 <h2 class="text-3xl font-bold text-center mb-16">My Projects</h2>
-
                 <div>
                     <h3 class="text-2xl font-semibold text-center mb-8">Android Projects</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -113,9 +112,7 @@
                         </div>
                     </div>
                 </div>
-
                 <hr class="my-16 border-gray-200">
-
                 <div>
                     <h3 class="text-2xl font-semibold text-center mb-8">Python Projects</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -176,7 +173,22 @@
             <div class="container mx-auto px-6 text-center">
                 <h2 class="text-3xl font-bold mb-4">Get In Touch</h2>
                 <p class="text-lg text-gray-600 mb-8 max-w-xl mx-auto">I'm currently open to new opportunities and collaborations. Feel free to reach out!</p>
-                <a href="mailto:sofinity.tech@gmail.com" class="bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:scale-105 inline-block">Email Me</a>
+                
+                <div class="flex justify-center items-center flex-col sm:flex-row gap-4">
+                    <a href="mailto:kevinlabonete@gmail.com?cc=kevinglenn.labonete@deped.gov.ph,kevinlabonete3@gmail.com" class="w-full sm:w-auto text-center bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:scale-105">Email Me</a>
+                    
+                    <a href="https://wa.me/639510206252" target="_blank" aria-label="Contact me on WhatsApp" class="text-white bg-green-500 hover:bg-green-600 font-medium rounded-lg p-3.5 text-center inline-flex items-center shadow-md transition-transform transform hover:scale-105">
+                        <i class="fab fa-whatsapp text-2xl"></i>
+                    </a>
+
+                    <a href="https://t.me/+639510206252" target="_blank" aria-label="Contact me on Telegram" class="text-white bg-sky-500 hover:bg-sky-600 font-medium rounded-lg p-3.5 text-center inline-flex items-center shadow-md transition-transform transform hover:scale-105">
+                        <i class="fab fa-telegram text-2xl"></i>
+                    </a>
+                    
+                    <a href="https://m.me/labonetekevinglenn" target="_blank" aria-label="Contact me on Facebook Messenger" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg p-3.5 text-center inline-flex items-center shadow-md transition-transform transform hover:scale-105">
+                        <i class="fab fa-facebook-messenger text-2xl"></i>
+                    </a>
+                </div>
             </div>
         </section>
     </main>
@@ -207,7 +219,7 @@
             });
         });
 
-        // --- NEW: Active Link Highlighting JS ---
+        // --- Active Link Highlighting JS ---
         const sections = document.querySelectorAll('main section');
         const navLinks = document.querySelectorAll('header nav ul a');
 
