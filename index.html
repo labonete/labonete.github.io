@@ -1,125 +1,217 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Personal portfolio for Kevin Glenn Labonete, a mobile developer specializing in Android, Kotlin, and Jetpack Compose.">
     <title>Kevin Glenn Labonete - Mobile App Developer</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="style.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* A light gray background */
+        }
+        /* Style for the active nav link */
+        .active-link {
+            transform: scale(1.1);
+            font-weight: 600;
+        }
+    </style>
 </head>
-<body>
+<body class="text-gray-800">
 
-    <header>
-        <nav>
-            <a href="#home" class="logo">Kevin Glenn Labonete</a>
-            <ul class="nav-links">
-                <li><a href="#about">About</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="#contact">Contact</a></li>
+    <!-- Header and Navigation -->
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#home" class="text-xl font-bold text-gray-900">Kevin Glenn Labonete</a>
+            <ul id="nav-links" class="hidden md:flex items-center space-x-8">
+                <li><a href="#about" class="text-gray-600 hover:text-indigo-600 transition-colors">About</a></li>
+                <li><a href="#projects" class="text-gray-600 hover:text-indigo-600 transition-colors">Projects</a></li>
+                <li><a href="#skills" class="text-gray-600 hover:text-indigo-600 transition-colors">Skills</a></li>
+                <li><a href="#contact" class="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a></li>
             </ul>
-            <div class="menu-icon">
-                <i class="fas fa-bars"></i>
+            <div id="menu-icon" class="md:hidden cursor-pointer">
+                <i class="fas fa-bars text-2xl"></i>
             </div>
         </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white">
+            <a href="#about" class="block py-2 px-4 text-sm hover:bg-gray-100">About</a>
+            <a href="#projects" class="block py-2 px-4 text-sm hover:bg-gray-100">Projects</a>
+            <a href="#skills" class="block py-2 px-4 text-sm hover:bg-gray-100">Skills</a>
+            <a href="#contact" class="block py-2 px-4 text-sm hover:bg-gray-100">Contact</a>
+        </div>
     </header>
 
     <main>
-        <section id="home" class="hero">
-            <div class="hero-text">
-                <h1>Hello, I'm Kevin Glenn Labonete</h1>
-                <p class="subtitle">A Passionate Mobile Developer & Tech Enthusiast</p>
-                <p>I build modern, responsive, and user-friendly mobile applications.</p>
-                <div class="hero-buttons">
-                    <a href="#projects" class="btn btn-primary">View My Work</a>
-                    <a href="https://github.com/labonete" class="btn btn-primary">Github Projects</a>
-                </div>
-            </div>
-            <div class="hero-image">
-                <img src="350x350.png" alt="A professional headshot of Kevin Glenn Labonete">
-            </div>
-        </section>
-
-        <section id="about" class="content-section">
-            <h2>About Me</h2>
-            <p>I am a detail-oriented developer with a strong foundation in native android technologies. 
-                My journey into programming started with a fascination for how things work, and it has evolved into a passion 
-                for creating seamless digital experiences. I thrive on solving complex problems and am always eager 
-                to learn and adapt to new technologies. When I'm not coding, I enjoy exploring new tech gadgets and 
-                contributing to open-source projects.</p>
-        </section>
-
-        <section id="projects" class="content-section bg-light">
-            <h2>My Projects</h2>
-            <div class="project-grid">
-                <div class="project-card">
-                    <img src="EZ_desktop_icon_700x700.png" alt="Easy 2307 Calculator for Windows" class="project-image">
-                    <h3>Easy 2307 Calculator (Windows OS)</h3>
-                    <p>Simplify tax compliance with this Windows app for DepED Finance Employees, making BIR Form 2307 calculations fast and accurate.</p>
-                    <div class="project-tech">
-                        <span>Python</span>
-                        <span>Windows</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="https://github.com/labonete/my-windows-apps-releases/releases/download/v1.1/Easy2307_v1.1_Setup_Fresh.exe" target="_blank">Download</a>
+        <!-- Hero Section -->
+        <section id="home" class="container mx-auto px-6 py-20 md:py-32">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="hero-text text-center md:text-left">
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">Hello, I'm Kevin Glenn Labonete</h1>
+                    <p class="text-xl text-indigo-600 font-medium mb-6">A Passionate Mobile Developer & Tech Enthusiast</p>
+                    <p class="text-lg text-gray-600 mb-8">I build modern, responsive, and user-friendly mobile applications.</p>
+                    <div class="flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="#projects" class="w-full sm:w-auto text-center bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:scale-105">View My Work</a>
+                        <a href="https://github.com/labonete" target="_blank" class="w-full sm:w-auto text-center bg-gray-200 text-gray-800 font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-gray-300 transition-transform transform hover:scale-105">GitHub Projects</a>
                     </div>
                 </div>
-                <div class="project-card">
-                    <img src="EZ_app_icon_700x700.png" alt="EZ 2307 Calculator App" class="project-image">
-                    <h3>EZ 2307 Calculator (Android)</h3>
-                    <p>A mobile app for DepED Finance Employees that simplifies and automates BIR Form 2307 tax calculations to ensure accuracy and save time.📱</p>
-                    <div class="project-tech">
-                        <span>Kotlin</span>
-                        <span>Jetpack Compose</span>
-                        <span>MVVM</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="https://github.com/labonete/my-android-app-releases/releases/download/v5.0.0/EZ-2307-Calculator-v5.apk" target="_blank">Download</a>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <img src="birthday_reminder_700x700.png" alt="Birthday Reminder App" class="project-image">
-                    <h3>Birthday Reminder App</h3>
-                    <p>A mobile app that sends timely notifications so you never miss a loved one's birthday.📱</p>
-                    <div class="project-tech">
-                        <span>Kotlin</span>
-                        <span>XML</span>
-                        <span>Room DB</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="https://github.com/labonete/my-android-app-releases/releases/download/v2.7.0/Birthday_Reminder_v2.7.apk" target="_blank">Download</a>
-                    </div>
+                <div class="hero-image flex justify-center">
+                    <img src="https://placehold.co/400x400/6366f1/ffffff?text=KGL" alt="A professional headshot of Kevin Glenn Labonete" class="rounded-full shadow-2xl w-64 h-64 md:w-80 md:h-80 object-cover">
                 </div>
             </div>
         </section>
 
-        <section id="skills" class="content-section">
-            <h2>Technical Skills</h2>
-            <div class="skills-grid">
-                <div class="skill-item"><i class="fab fa-android"></i> Android</div>
-                <div class="skill-item"><i class="fas fa-code"></i> Kotlin</div>
-                <div class="skill-item"><i class="fab fa-android"></i> Jetpack Compose</div>
-                <div class="skill-item"><i class="fab fa-python"></i> Python</div>
+        <!-- About Me Section -->
+        <section id="about" class="py-20 md:py-28 bg-white">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl font-bold mb-6">About Me</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600 leading-relaxed">
+                    I am a detail-oriented developer with a strong foundation in native android technologies. 
+                    My journey into programming started with a fascination for how things work, and it has evolved into a passion 
+                    for creating seamless digital experiences. I thrive on solving complex problems and am always eager 
+                    to learn and adapt to new technologies. When I'm not coding, I enjoy exploring new tech gadgets and 
+                    contributing to open-source projects.
+                </p>
             </div>
         </section>
 
-        <section id="contact" class="content-section bg-light">
-            <h2>Get In Touch</h2>
-            <p>I'm currently open to new opportunities. Feel free to reach out!</p>
-            <a href="mailto:sofinity.tech@gmail.com" class="btn btn-primary">Email Me</a>
+        <!-- Projects Section -->
+        <section id="projects" class="py-20 md:py-28 bg-gray-50">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl font-bold text-center mb-16">My Projects</h2>
+
+                <!-- Android Projects -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-center mb-8">Android Projects</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <!-- Project Card: EZ 2307 Calculator (Android) -->
+                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
+                            <img src="https://placehold.co/700x400/10b981/ffffff?text=EZ+2307+Android" alt="EZ 2307 Calculator App" class="w-full h-48 object-cover">
+                            <div class="p-6 flex flex-col flex-grow">
+                                <h3 class="text-xl font-semibold mb-2">EZ 2307 Calculator (Android)</h3>
+                                <p class="text-gray-600 mb-4 flex-grow">A mobile app that simplifies and automates BIR Form 2307 tax calculations to ensure accuracy and save time.📱</p>
+                                <div class="flex flex-wrap gap-2 my-4">
+                                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Kotlin</span>
+                                    <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Jetpack Compose</span>
+                                    <span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">MVVM</span>
+                                </div>
+                                <a href="https://github.com/labonete/my-android-app-releases/releases/download/v5.0.0/EZ-2307-Calculator-v5.apk" target="_blank" class="inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Download</a>
+                            </div>
+                        </div>
+                        <!-- Project Card: Birthday Reminder App -->
+                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
+                            <img src="https://placehold.co/700x400/ec4899/ffffff?text=Birthday+Reminder" alt="Birthday Reminder App" class="w-full h-48 object-cover">
+                            <div class="p-6 flex flex-col flex-grow">
+                                <h3 class="text-xl font-semibold mb-2">Birthday Reminder App</h3>
+                                <p class="text-gray-600 mb-4 flex-grow">A mobile app that sends timely notifications so you never miss a loved one's birthday.📱</p>
+                                <div class="flex flex-wrap gap-2 my-4">
+                                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Kotlin</span>
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">XML</span>
+                                    <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Room DB</span>
+                                </div>
+                                <a href="https://github.com/labonete/my-android-app-releases/releases/download/v2.7.0/Birthday_Reminder_v2.7.apk" target="_blank" class="inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Download</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <hr class="my-16 border-gray-200">
+
+                <!-- Python Projects -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-center mb-8">Python Projects</h3>
+                    <div class="flex justify-center">
+                        <!-- Project Card: Easy 2307 Calculator (Windows OS) -->
+                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col w-full max-w-md">
+                            <img src="https://placehold.co/700x400/f59e0b/ffffff?text=Easy+2307+Win" alt="Easy 2307 Calculator for Windows" class="w-full h-48 object-cover">
+                            <div class="p-6 flex flex-col flex-grow">
+                                <h3 class="text-xl font-semibold mb-2">Easy 2307 Calculator (Windows OS)</h3>
+                                <p class="text-gray-600 mb-4 flex-grow">Simplify tax compliance with this Windows app for DepED Finance Employees, making BIR Form 2307 calculations fast and accurate.</p>
+                                <div class="flex flex-wrap gap-2 my-4">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Python</span>
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Windows</span>
+                                </div>
+                                <a href="https://github.com/labonete/my-windows-apps-releases/releases/download/v1.1/Easy2307_v1.1_Setup_Fresh.exe" target="_blank" class="inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Download</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Skills Section -->
+        <section id="skills" class="py-20 md:py-28 bg-white">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl font-bold mb-12">Technical Skills</h2>
+                <div class="flex flex-wrap justify-center items-center gap-8">
+                    <div class="skill-item text-center p-4 bg-gray-100 rounded-lg shadow-sm w-40">
+                        <i class="fab fa-android text-4xl text-green-500 mb-2"></i>
+                        <span class="font-semibold">Android</span>
+                    </div>
+                    <div class="skill-item text-center p-4 bg-gray-100 rounded-lg shadow-sm w-40">
+                        <i class="fas fa-code text-4xl text-purple-500 mb-2"></i>
+                        <span class="font-semibold">Kotlin</span>
+                    </div>
+                    <div class="skill-item text-center p-4 bg-gray-100 rounded-lg shadow-sm w-40">
+                        <i class="fab fa-android text-4xl text-blue-500 mb-2"></i>
+                        <span class="font-semibold">Jetpack Compose</span>
+                    </div>
+                    <div class="skill-item text-center p-4 bg-gray-100 rounded-lg shadow-sm w-40">
+                        <i class="fab fa-python text-4xl text-yellow-500 mb-2"></i>
+                        <span class="font-semibold">Python</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 md:py-28 bg-gray-50">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl font-bold mb-4">Get In Touch</h2>
+                <p class="text-lg text-gray-600 mb-8 max-w-xl mx-auto">I'm currently open to new opportunities and collaborations. Feel free to reach out!</p>
+                <a href="mailto:sofinity.tech@gmail.com" class="bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:scale-105 inline-block">Email Me</a>
+            </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2025 Kevin Glenn Labonete. All rights reserved.</p>
-        <div class="social-links">
-            <a href="https://github.com/labonete" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-            <a href="#" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <div class="social-links flex justify-center space-x-6 mb-4">
+                <a href="https://github.com/labonete" target="_blank" aria-label="GitHub" class="text-2xl hover:text-indigo-400 transition-colors"><i class="fab fa-github"></i></a>
+                <a href="#" target="_blank" aria-label="LinkedIn" class="text-2xl hover:text-indigo-400 transition-colors"><i class="fab fa-linkedin"></i></a>
+            </div>
+            <p>&copy; 2025 Kevin Glenn Labonete. All rights reserved.</p>
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <!-- JavaScript for Mobile Menu and Active Link Highlighting -->
+    <script>
+        const menuIcon = document.getElementById('menu-icon');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuIcon.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when a link is clicked
+        const mobileLinks = document.querySelectorAll('#mobile-menu a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    </script>
 </body>
 </html>
+
