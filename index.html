@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Personal portfolio for Kevin Glenn Labonete, a mobile developer specializing in Android, Kotlin, and Jetpack Compose.">
     <title>Kevin Glenn Labonete - Mobile App Developer</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,12 +20,12 @@
         .active-link {
             transform: scale(1.1);
             font-weight: 600;
+            color: #4f46e5; /* Corresponds to indigo-600 */
         }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <!-- Header and Navigation -->
     <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="#home" class="text-xl font-bold text-gray-900">Kevin Glenn Labonete</a>
@@ -38,11 +35,10 @@
                 <li><a href="#skills" class="text-gray-600 hover:text-indigo-600 transition-colors">Skills</a></li>
                 <li><a href="#contact" class="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a></li>
             </ul>
-            <div id="menu-icon" class="md:hidden cursor-pointer">
+            <button id="menu-icon" class="md:hidden cursor-pointer" aria-label="Open navigation menu">
                 <i class="fas fa-bars text-2xl"></i>
-            </div>
+            </button>
         </nav>
-        <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden bg-white">
             <a href="#about" class="block py-2 px-4 text-sm hover:bg-gray-100">About</a>
             <a href="#projects" class="block py-2 px-4 text-sm hover:bg-gray-100">Projects</a>
@@ -52,7 +48,6 @@
     </header>
 
     <main>
-        <!-- Hero Section -->
         <section id="home" class="container mx-auto px-6 py-20 md:py-32">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="hero-text text-center md:text-left">
@@ -70,7 +65,6 @@
             </div>
         </section>
 
-        <!-- About Me Section -->
         <section id="about" class="py-20 md:py-28 bg-white">
             <div class="container mx-auto px-6 text-center">
                 <h2 class="text-3xl font-bold mb-6">About Me</h2>
@@ -84,16 +78,13 @@
             </div>
         </section>
 
-        <!-- Projects Section -->
         <section id="projects" class="py-20 md:py-28 bg-gray-50">
             <div class="container mx-auto px-6">
                 <h2 class="text-3xl font-bold text-center mb-16">My Projects</h2>
 
-                <!-- Android Projects -->
                 <div>
                     <h3 class="text-2xl font-semibold text-center mb-8">Android Projects</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        <!-- Project Card: EZ 2307 Calculator (Android) -->
                         <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
                             <img src="EZ_app_icon_700x700.png" alt="EZ 2307 Calculator App" class="w-full aspect-square object-cover">
                             <div class="p-6 flex flex-col flex-grow">
@@ -107,7 +98,6 @@
                                 <a href="https://github.com/labonete/my-android-app-releases/releases/download/v5.0.0/EZ-2307-Calculator-v5.apk" target="_blank" class="inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Download</a>
                             </div>
                         </div>
-                        <!-- Project Card: Birthday Reminder App -->
                         <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
                             <img src="birthday_reminder_700x700.png" alt="Birthday Reminder App" class="w-full aspect-square object-cover">
                             <div class="p-6 flex flex-col flex-grow">
@@ -124,15 +114,12 @@
                     </div>
                 </div>
 
-                <!-- Divider -->
                 <hr class="my-16 border-gray-200">
 
-                <!-- Python Projects -->
                 <div>
                     <h3 class="text-2xl font-semibold text-center mb-8">Python Projects</h3>
-                    <div class="flex justify-center">
-                        <!-- Project Card: Easy 2307 Calculator (Windows OS) -->
-                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col w-full max-w-md">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
                             <img src="EZ_desktop_icon_700x700.png" alt="Easy 2307 Calculator for Windows" class="w-full aspect-square object-cover">
                             <div class="p-6 flex flex-col flex-grow">
                                 <h3 class="text-xl font-semibold mb-2">Easy 2307 Calculator (Windows OS)</h3>
@@ -144,15 +131,15 @@
                                 <a href="https://github.com/labonete/my-windows-apps-releases/releases/download/v1.1/Easy2307_v1.1_Setup_Fresh.exe" target="_blank" class="inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Download</a>
                             </div>
                         </div>
-                        <!-- Project Card: Image File Format Converter (Windows) -->
                         <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
-                            <img src="ImageFile_Converter_700x700.png" alt="EZ 2307 Calculator App" class="w-full aspect-square object-cover">
+                            <img src="ImageFile_Converter_700x700.png" alt="Image File Format Converter App" class="w-full aspect-square object-cover">
                             <div class="p-6 flex flex-col flex-grow">
                                 <h3 class="text-xl font-semibold mb-2">Image File Format Converter (Windows)</h3>
                                 <p class="text-gray-600 mb-4 flex-grow">Easily convert Image File formats correctly and can customize resolution</p>
                                 <div class="flex flex-wrap gap-2 my-4">
                                     <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Python</span>
-                                    <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Windows</span>                              </div>
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Windows</span>
+                                </div>
                                 <a href="https://github.com/labonete/my-windows-apps-releases/releases/download/v1.2/ImageFile.Converter.exe" target="_blank" class="inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Download</a>
                             </div>
                         </div>
@@ -161,7 +148,6 @@
             </div>
         </section>
 
-        <!-- Technical Skills Section -->
         <section id="skills" class="py-20 md:py-28 bg-white">
             <div class="container mx-auto px-6 text-center">
                 <h2 class="text-3xl font-bold mb-12">Technical Skills</h2>
@@ -186,7 +172,6 @@
             </div>
         </section>
 
-        <!-- Contact Section -->
         <section id="contact" class="py-20 md:py-28 bg-gray-50">
             <div class="container mx-auto px-6 text-center">
                 <h2 class="text-3xl font-bold mb-4">Get In Touch</h2>
@@ -196,19 +181,18 @@
         </section>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8">
         <div class="container mx-auto px-6 text-center">
             <div class="social-links flex justify-center space-x-6 mb-4">
                 <a href="https://github.com/labonete" target="_blank" aria-label="GitHub" class="text-2xl hover:text-indigo-400 transition-colors"><i class="fab fa-github"></i></a>
-                <a href="#" target="_blank" aria-label="LinkedIn" class="text-2xl hover:text-indigo-400 transition-colors"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.linkedin.com/in/your-profile-url" target="_blank" aria-label="LinkedIn" class="text-2xl hover:text-indigo-400 transition-colors"><i class="fab fa-linkedin"></i></a>
             </div>
             <p>&copy; 2025 Kevin Glenn Labonete. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- JavaScript for Mobile Menu and Active Link Highlighting -->
     <script>
+        // --- Mobile Menu JS ---
         const menuIcon = document.getElementById('menu-icon');
         const mobileMenu = document.getElementById('mobile-menu');
 
@@ -216,14 +200,40 @@
             mobileMenu.classList.toggle('hidden');
         });
 
-        // Close mobile menu when a link is clicked
         const mobileLinks = document.querySelectorAll('#mobile-menu a');
         mobileLinks.forEach(link => {
             link.addEventListener('click', () => {
                 mobileMenu.classList.add('hidden');
             });
         });
+
+        // --- NEW: Active Link Highlighting JS ---
+        const sections = document.querySelectorAll('main section');
+        const navLinks = document.querySelectorAll('header nav ul a');
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.5
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    navLinks.forEach(link => {
+                        link.classList.remove('active-link');
+                        if (link.getAttribute('href') === `#${id}`) {
+                            link.classList.add('active-link');
+                        }
+                    });
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
     </script>
 </body>
 </html>
-
