@@ -14,78 +14,117 @@
         /* Custom base styles */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* A light gray background */
+            background-color: #f8fafc;
         }
         /* Style for the active nav link */
         .active-link {
             transform: scale(1.1);
             font-weight: 600;
-            color: #4f46e5; /* Corresponds to indigo-600 */
+            color: #4f46e5;
+        }
+        /* Fade-in animation for sections */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Custom shadow for cards */
+        .custom-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        /* Gradient background for hero */
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+    <header class="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#home" class="text-xl font-bold text-gray-900">Kevin Glenn Labonete</a>
+            <a href="#home" class="text-xl font-bold text-gray-900 flex items-center">
+                <span class="bg-indigo-600 text-white p-2 rounded-lg mr-2">KL</span>
+                Kevin Glenn Labonete
+            </a>
             <ul id="nav-links" class="hidden md:flex items-center space-x-8">
                 <li><a href="#about" class="text-gray-600 hover:text-indigo-600 transition-colors">About</a></li>
                 <li><a href="#projects" class="text-gray-600 hover:text-indigo-600 transition-colors">Projects</a></li>
                 <li><a href="#skills" class="text-gray-600 hover:text-indigo-600 transition-colors">Skills</a></li>
                 <li><a href="#contact" class="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a></li>
+                <li><a href="#" class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors">Resume</a></li>
             </ul>
             <button id="menu-icon" class="md:hidden cursor-pointer" aria-label="Open navigation menu">
                 <i class="fas fa-bars text-2xl"></i>
             </button>
         </nav>
-        <div id="mobile-menu" class="hidden md:hidden bg-white">
-            <a href="#about" class="block py-2 px-4 text-sm hover:bg-gray-100">About</a>
-            <a href="#projects" class="block py-2 px-4 text-sm hover:bg-gray-100">Projects</a>
-            <a href="#skills" class="block py-2 px-4 text-sm hover:bg-gray-100">Skills</a>
-            <a href="#contact" class="block py-2 px-4 text-sm hover:bg-gray-100">Contact</a>
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg">
+            <a href="#about" class="block py-3 px-4 text-sm hover:bg-gray-100 transition-colors">About</a>
+            <a href="#projects" class="block py-3 px-4 text-sm hover:bg-gray-100 transition-colors">Projects</a>
+            <a href="#skills" class="block py-3 px-4 text-sm hover:bg-gray-100 transition-colors">Skills</a>
+            <a href="#contact" class="block py-3 px-4 text-sm hover:bg-gray-100 transition-colors">Contact</a>
+            <a href="#" class="block py-3 px-4 text-sm bg-indigo-50 text-indigo-600 font-medium">Download Resume</a>
         </div>
     </header>
 
     <main>
-        <section id="home" class="container mx-auto px-6 py-20 md:py-32">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="hero-text text-center md:text-left">
-                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">Hello, I'm Kevin Glenn Labonete</h1>
-                    <p class="text-xl text-indigo-600 font-medium mb-6">A Passionate Mobile Developer & Tech Enthusiast</p>
-                    <p class="text-lg text-gray-600 mb-8">I build modern, responsive, and user-friendly mobile applications.</p>
-                    <div class="flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
-                        <a href="#projects" class="w-full sm:w-auto text-center bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:scale-105">View My Work</a>
-                        <a href="https://github.com/labonete" target="_blank" class="w-full sm:w-auto text-center bg-gray-200 text-gray-800 font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-gray-300 transition-transform transform hover:scale-105">GitHub Projects</a>
+        <section id="home" class="hero-gradient text-white">
+            <div class="container mx-auto px-6 py-20 md:py-32">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="hero-text text-center md:text-left">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">Hello, I'm <span class="text-yellow-300">Kevin Glenn Labonete</span></h1>
+                        <p class="text-xl font-medium mb-6">A Passionate Mobile Developer & Tech Enthusiast</p>
+                        <p class="text-lg mb-8 opacity-90">I build modern, responsive, and user-friendly mobile applications that solve real-world problems.</p>
+                        <div class="flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
+                            <a href="#projects" class="w-full sm:w-auto text-center bg-white text-indigo-600 font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-gray-100 transition-all transform hover:scale-105">View My Work</a>
+                            <a href="https://github.com/labonete" target="_blank" class="w-full sm:w-auto text-center bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-lg hover:bg-white/10 transition-all transform hover:scale-105">GitHub Projects</a>
+                        </div>
                     </div>
-                </div>
-                <div class="hero-image flex justify-center">
-                    <img src="350x350.png" alt="A professional headshot of Kevin Glenn Labonete" class="rounded-full shadow-2xl w-64 h-64 md:w-80 md:h-80 object-cover">
+                    <div class="hero-image flex justify-center">
+                        <div class="relative">
+                            <div class="absolute -inset-4 bg-white/20 rounded-full blur-xl"></div>
+                            <img src="350x350.png" alt="A professional headshot of Kevin Glenn Labonete" class="relative rounded-full shadow-2xl w-64 h-64 md:w-80 md:h-80 object-cover border-4 border-white">
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <section id="about" class="py-20 md:py-28 bg-white">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-3xl font-bold mb-6">About Me</h2>
-                <p class="max-w-3xl mx-auto text-lg text-gray-600 leading-relaxed">
-                    I am a detail-oriented developer with a strong foundation in native android technologies. 
-                    My journey into programming started with a fascination for how things work, and it has evolved into a passion 
-                    for creating seamless digital experiences. I thrive on solving complex problems and am always eager 
-                    to learn and adapt to new technologies. When I'm not coding, I enjoy exploring new tech gadgets and 
-                    contributing to open-source projects.
-                </p>
+            <div class="container mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center fade-in">
+                    <h2 class="text-3xl font-bold mb-6">About Me</h2>
+                    <p class="text-lg text-gray-600 leading-relaxed mb-8">
+                        I am a detail-oriented developer with a strong foundation in native Android technologies. 
+                        My journey into programming started with a fascination for how things work, and it has evolved into a passion 
+                        for creating seamless digital experiences. I thrive on solving complex problems and am always eager 
+                        to learn and adapt to new technologies.
+                    </p>
+                    <div class="bg-indigo-50 p-6 rounded-lg border-l-4 border-indigo-500 text-left">
+                        <p class="text-gray-700">
+                            <i class="fas fa-quote-left text-indigo-400 mr-2"></i>
+                            When I'm not coding, I enjoy exploring new tech gadgets, contributing to open-source projects, 
+                            and staying updated with the latest trends in mobile development.
+                        </p>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section id="projects" class="py-20 md:py-28 bg-gray-50">
             <div class="container mx-auto px-6">
                 <h2 class="text-3xl font-bold text-center mb-16">My Projects</h2>
-                <div>
+                <div class="mb-16">
                     <h3 class="text-2xl font-semibold text-center mb-8">Android Projects</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
-                            <img src="EZ_app_icon_700x700.png" alt="EZ 2307 Calculator App" class="w-full aspect-square object-cover">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                        <div class="project-card bg-white rounded-xl custom-shadow overflow-hidden transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                            <div class="relative overflow-hidden">
+                                <img src="EZ_app_icon_700x700.png" alt="EZ 2307 Calculator App" class="w-full aspect-square object-cover transition-transform duration-500 hover:scale-105">
+                                <div class="absolute top-4 right-4 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">LATEST</div>
+                            </div>
                             <div class="p-6 flex flex-col flex-grow">
                                 <h3 class="text-xl font-semibold mb-2">EZ 2307 Calculator (Android)</h3>
                                 <p class="text-gray-600 mb-4 flex-grow">A mobile app that simplifies and automates BIR Form 2307 tax calculations to ensure accuracy and save time.📱</p>
@@ -97,8 +136,8 @@
                                 <a href="https://github.com/labonete/ez2307-android-releases/releases/download/version-alpha/EZ2307_calculator_v5.1.apk" target="_blank" class="inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Download Latest v5.1</a>
                             </div>
                         </div>
-                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
-                            <img src="birthday_reminder_700x700.png" alt="Birthday Reminder App" class="w-full aspect-square object-cover">
+                        <div class="project-card bg-white rounded-xl custom-shadow overflow-hidden transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                            <img src="birthday_reminder_700x700.png" alt="Birthday Reminder App" class="w-full aspect-square object-cover transition-transform duration-500 hover:scale-105">
                             <div class="p-6 flex flex-col flex-grow">
                                 <h3 class="text-xl font-semibold mb-2">Birthday Reminder App</h3>
                                 <p class="text-gray-600 mb-4 flex-grow">A mobile app that sends timely notifications so you never miss a loved one's birthday.📱</p>
@@ -110,8 +149,8 @@
                                 <a href="https://github.com/labonete/my-android-app-releases/releases/download/v2.7.0/Birthday_Reminder_v2.7.apk" target="_blank" class="inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Download</a>
                             </div>
                         </div>
-                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
-                            <img src="taskflow.png" alt="Task Reminder App" class="w-full aspect-square object-cover">
+                        <div class="project-card bg-white rounded-xl custom-shadow overflow-hidden transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                            <img src="taskflow.png" alt="Task Reminder App" class="w-full aspect-square object-cover transition-transform duration-500 hover:scale-105">
                             <div class="p-6 flex flex-col flex-grow">
                                 <h3 class="text-xl font-semibold mb-2">Task Reminder App</h3>
                                 <p class="text-gray-600 mb-4 flex-grow">A simple, effective mobile application for scheduling and managing daily tasks with customizable reminders.📱</p>
@@ -129,8 +168,8 @@
                 <div>
                     <h3 class="text-2xl font-semibold text-center mb-8">Python Projects</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
-                            <img src="EZ_desktop_icon_700x700.png" alt="Easy 2307 Calculator for Windows" class="w-full aspect-square object-cover">
+                        <div class="project-card bg-white rounded-xl custom-shadow overflow-hidden transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                            <img src="EZ_desktop_icon_700x700.png" alt="Easy 2307 Calculator for Windows" class="w-full aspect-square object-cover transition-transform duration-500 hover:scale-105">
                             <div class="p-6 flex flex-col flex-grow">
                                 <h3 class="text-xl font-semibold mb-2">Easy 2307 Calculator (Windows OS)</h3>
                                 <p class="text-gray-600 mb-4 flex-grow">Simplify tax compliance with this Windows app for DepED Finance Employees, making BIR Form 2307 calculations fast and accurate.</p>
@@ -141,8 +180,8 @@
                                 <a href="https://github.com/labonete/my-windows-apps-releases/releases/download/v1.1/Easy2307_v1.1_Setup_Fresh.exe" target="_blank" class="inline-block w-full text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors">Download</a>
                             </div>
                         </div>
-                        <div class="project-card bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 flex flex-col">
-                            <img src="ImageFile_Converter_700x700.png" alt="Image File Format Converter App" class="w-full aspect-square object-cover">
+                        <div class="project-card bg-white rounded-xl custom-shadow overflow-hidden transform hover:-translate-y-2 transition-all duration-300 flex flex-col">
+                            <img src="ImageFile_Converter_700x700.png" alt="Image File Format Converter App" class="w-full aspect-square object-cover transition-transform duration-500 hover:scale-105">
                             <div class="p-6 flex flex-col flex-grow">
                                 <h3 class="text-xl font-semibold mb-2">Image File Format Converter (Windows)</h3>
                                 <p class="text-gray-600 mb-4 flex-grow">Easily convert Image File formats correctly and can customize resolution</p>
@@ -159,24 +198,47 @@
         </section>
 
         <section id="skills" class="py-20 md:py-28 bg-white">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-3xl font-bold mb-12">Technical Skills</h2>
-                <div class="flex flex-wrap justify-center items-center gap-8">
-                    <div class="skill-item text-center p-4 bg-gray-100 rounded-lg shadow-sm w-40">
-                        <i class="fab fa-android text-4xl text-green-500 mb-2"></i>
-                        <span class="font-semibold">Android</span>
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl font-bold text-center mb-12">Technical Skills</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                    <div class="skill-item text-center p-6 bg-white rounded-xl custom-shadow transform hover:scale-105 transition-transform duration-300">
+                        <i class="fab fa-android text-5xl text-green-500 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Android Development</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-green-500 h-2.5 rounded-full" style="width: 90%"></div>
+                        </div>
                     </div>
-                    <div class="skill-item text-center p-4 bg-gray-100 rounded-lg shadow-sm w-40">
-                        <i class="fas fa-code text-4xl text-purple-500 mb-2"></i>
-                        <span class="font-semibold">Kotlin</span>
+                    <div class="skill-item text-center p-6 bg-white rounded-xl custom-shadow transform hover:scale-105 transition-transform duration-300">
+                        <i class="fas fa-code text-5xl text-purple-500 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Kotlin</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-purple-500 h-2.5 rounded-full" style="width: 85%"></div>
+                        </div>
                     </div>
-                    <div class="skill-item text-center p-4 bg-gray-100 rounded-lg shadow-sm w-40">
-                        <i class="fab fa-android text-4xl text-blue-500 mb-2"></i>
-                        <span class="font-semibold">Jetpack Compose</span>
+                    <div class="skill-item text-center p-6 bg-white rounded-xl custom-shadow transform hover:scale-105 transition-transform duration-300">
+                        <i class="fab fa-android text-5xl text-blue-500 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Jetpack Compose</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-500 h-2.5 rounded-full" style="width: 80%"></div>
+                        </div>
                     </div>
-                    <div class="skill-item text-center p-4 bg-gray-100 rounded-lg shadow-sm w-40">
-                        <i class="fab fa-python text-4xl text-yellow-500 mb-2"></i>
-                        <span class="font-semibold">Python</span>
+                    <div class="skill-item text-center p-6 bg-white rounded-xl custom-shadow transform hover:scale-105 transition-transform duration-300">
+                        <i class="fab fa-python text-5xl text-yellow-500 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Python</h3>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-yellow-500 h-2.5 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-12 max-w-3xl mx-auto">
+                    <h3 class="text-xl font-semibold text-center mb-6">Other Skills & Technologies</h3>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <span class="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-2 rounded-lg">MVVM Architecture</span>
+                        <span class="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-2 rounded-lg">Room Database</span>
+                        <span class="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-2 rounded-lg">RESTful APIs</span>
+                        <span class="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-2 rounded-lg">Git & GitHub</span>
+                        <span class="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-2 rounded-lg">Material Design</span>
+                        <span class="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-2 rounded-lg">Problem Solving</span>
                     </div>
                 </div>
             </div>
@@ -187,8 +249,27 @@
                 <h2 class="text-3xl font-bold mb-4">Get In Touch</h2>
                 <p class="text-lg text-gray-600 mb-8 max-w-xl mx-auto">I'm currently open to new opportunities and collaborations. Feel free to reach out!</p>
                 
+                <div class="max-w-md mx-auto bg-white p-8 rounded-xl custom-shadow mb-8">
+                    <div class="flex items-center mb-6 p-3 bg-indigo-50 rounded-lg">
+                        <i class="fas fa-envelope text-indigo-600 text-xl mr-4"></i>
+                        <div class="text-left">
+                            <p class="font-medium">Email Address</p>
+                            <a href="mailto:kevinlabonete@gmail.com" class="text-indigo-600">kevinlabonete@gmail.com</a>
+                        </div>
+                    </div>
+                    <div class="flex items-center mb-6 p-3 bg-indigo-50 rounded-lg">
+                        <i class="fas fa-phone text-indigo-600 text-xl mr-4"></i>
+                        <div class="text-left">
+                            <p class="font-medium">Phone Number</p>
+                            <a href="tel:+639510206252" class="text-indigo-600">+63 951 020 6252</a>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="flex justify-center items-center flex-col sm:flex-row gap-4">
-                    <a href="mailto:kevinlabonete@gmail.com?cc=kevinglenn.labonete@deped.gov.ph,kevinlabonete3@gmail.com" class="w-full sm:w-auto text-center bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:scale-105">Email Me</a>
+                    <a href="mailto:kevinlabonete@gmail.com?cc=kevinglenn.labonete@deped.gov.ph,kevinlabonete3@gmail.com" class="w-full sm:w-auto text-center bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-700 transition-transform transform hover:scale-105 flex items-center justify-center">
+                        <i class="fas fa-paper-plane mr-2"></i> Email Me
+                    </a>
                     
                     <a href="https://wa.me/639510206252" target="_blank" aria-label="Contact me on WhatsApp" class="text-white bg-green-500 hover:bg-green-600 font-medium rounded-lg p-3.5 text-center inline-flex items-center shadow-md transition-transform transform hover:scale-105">
                         <i class="fab fa-whatsapp text-2xl"></i>
@@ -209,8 +290,8 @@
     <footer class="bg-gray-800 text-white py-8">
         <div class="container mx-auto px-6 text-center">
             <div class="social-links flex justify-center space-x-6 mb-4">
-                <a href="https://github.com/labonete" target="_blank" aria-label="GitHub" class="text-2xl hover:text-indigo-400 transition-colors"><i class="fab fa-github"></i></a>
-                <a href="https://www.linkedin.com/in/your-profile-url" target="_blank" aria-label="LinkedIn" class="text-2xl hover:text-indigo-400 transition-colors"><i class="fab fa-linkedin"></i></a>
+                <a href="https://github.com/labonete" target="_blank" aria-label="GitHub" class="text-2xl hover:text-indigo-400 transition-colors transform hover:scale-110"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/your-profile-url" target="_blank" aria-label="LinkedIn" class="text-2xl hover:text-indigo-400 transition-colors transform hover:scale-110"><i class="fab fa-linkedin"></i></a>
             </div>
             <p>&copy; 2025 Kevin Glenn Labonete. All rights reserved.</p>
         </div>
@@ -234,7 +315,7 @@
 
         // --- Active Link Highlighting JS ---
         const sections = document.querySelectorAll('main section');
-        const navLinks = document.querySelectorAll('header nav ul a');
+        const navLinks = document.querySelectorAll('header nav ul a, #mobile-menu a');
 
         const observerOptions = {
             root: null,
@@ -258,6 +339,22 @@
 
         sections.forEach(section => {
             observer.observe(section);
+        });
+
+        // --- Fade-in animation for sections ---
+        const fadeElements = document.querySelectorAll('.fade-in');
+        
+        const fadeObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    fadeObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        fadeElements.forEach(element => {
+            fadeObserver.observe(element);
         });
     </script>
 </body>
