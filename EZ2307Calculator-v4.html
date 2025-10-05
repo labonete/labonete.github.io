@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Easy 2307 Calculator</title>
+<style>
+  :root{
+    --bg:#f6f8fa; --card:#ffffff; --text:#0b1220; --muted:#6b7280; --chip:#eef2f7; --input:#e5e7eb; --btn:#4f46e5; --btnText:#ffffff; --shadow:0 2px 8px rgba(0,0,0,.08);
+  }
+  [data-theme="dark"]{
+    --bg:#0b1220; --card:#101827; --text:#e6e8ee; --muted:#9aa3b2; --chip:#1b2436; --input:#253149; --btn:#6366f1; --btnText:#ffffff; --shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  html,body{height:100%}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:24px}
+  .card{background:var(--card);border-radius:10px;box-shadow:var(--shadow);max-width:760px;margin:auto;padding:20px}
+  h1{margin:0 0 10px;font-size:20px}
+  label{display:block;margin:12px 0 6px;font-weight:600}
+  .radio-group{display:flex;gap:14px;flex-wrap:wrap}
+  input[type="text"], input[type="number"], select{padding:10px;border:1px solid var(--input);background:transparent;color:var(--text);border-radius:10px;min-width:200px}
+  .results{margin-top:18px;padding:12px;background:var(--chip);border-radius:8px}
+  .row2{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+  .muted{color:var(--muted);font-size:12px}
+  .amount{font-weight:700}
+  button{margin-top:14px;padding:10px 16px;border:0;border-radius:10px;background:var(--btn);color:var(--btnText);font-weight:700;cursor:pointer}
+  .disabled{opacity:.6;pointer-events:none}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="topbar">
+    <h1>Easy 2307 Calculator</h1>
+    <div>
+      <label class="muted" for="themeSelect">Theme:</label>
+      <select id="themeSelect">
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="auto" selected>Auto</option>
+      </select>
+      <button id="saveTheme">Save Theme</button>
+    </div>
+  </div>
+  <p class="muted" style="margin-top:-5px; margin-bottom:15px;">Developed by: Kevin Glenn P. Labonete</p>
+
+  <label>Gross Amount (₱)</label>
+  <input id="gross" type="text" inputmode="decimal" placeholder="0.00" style="text-align:right;"/>
+
+  <label>Special Case</label>
+  <div class="radio-group">
+    <label><input type="radio" name="special" value="none" checked> None</label>
+    <label><input type="radio" name="special" value="water"> Water District (2% of Gross)</label>
+    <label><input type="radio" name="special" value="aselco"> ASELCO (input VATABLE, 5% of VATABLE)</label>
+  </div>
+
+  <div id="aselcoRow" style="display:none;">
+    <label>ASELCO SOA – VATABLE Portion (₱)</label>
+    <input id="aselcoVatable" type="number" step="0.01" placeholder="e.g. 6,736.01" />
+    <div class="muted">Tip: Copy the VATABLE value from the SOA; Lower = 5% of this amount.</div>
+  </div>
+
+  <div id="stdOptions">
+    <label>VAT Type</label>
+    <div class="radio-group" id="vatOptions">
+      <label><input type="radio" name="vatType" value="vat" checked> VAT Registered</label>
+      <label><input type="radio" name="vatType" value="nonvat"> Non‑VAT Registered</label>
+    </div>
+
+    <label>Nature of Transaction</label>
+    <div class="radio-group" id="natureOptions">
+      <label><input type="radio" name="nature" value="goods" checked> Goods</label>
+      <label><input type="radio" name="nature" value="services"> Services</label>
+    </div>
+
+    <label>Payee Type</label>
+    <div class="radio-group" id="payeeOptions">
+      <label><input type="radio" name="payeeType" value="individual" checked> Individual</label>
+      <label><input type="radio" name="payeeType" value="corporation"> Corporation</label>
+    </div>
+  </div>
+
+  <button id="btnCalc">Compute</button>
+
+  <div id="results" class="results" style="display:none;">
+    <div class="row2"><span><strong>Net of VAT:</strong> <span class="muted">(if VAT)</span></span><span id="netVat" class="amount">—</span></div>
+    <div class="row2"><span><strong>Upper (EWT):</strong> <span id="upperAtc" class="muted">—</span></span><span id="upperAmt" class="amount">—</span></div>
+    <div class="row2"><span><strong>Lower (Business Tax):</strong> <span id="lowerAtc" class="muted">—</span></span><span id="lowerAmt" class="amount">—</span></div>
+    <hr />
+    <div class="row2"><span><strong>Total Withheld</strong></span><span id="totalWithheld" class="amount">—</span></div>
+    <div class="row2"><span><strong>Net Payable</strong></span><span id="netPayable" class="amount">—</span></div>
+	<div class="row2" style="align-items: flex-start;"><span><strong>In Words:</strong></span><span id="netPayableWords" class="amount" style="font-size: 12px; text-align: right; line-height: 1.4;">—</span></div>
+    <p class="muted" style="margin-top: 10px;">ATC mapping: Upper – WI157/WI640 (Individual), WC157/WC640 (Corporation). Lower – WV020 (Services VAT), WV010 (Goods VAT), WB080 (Non‑VAT). Water District (EWT) = WC157 (2% of Gross). ASELCO = 5% of VATABLE (per SOA).</p>
+  </div>
+</div>
+
+<script>
+  // --- THEME SWITCHER LOGIC ---
+  const root = document.documentElement;
+  const themeSelect = document.getElementById('themeSelect');
+  const saveThemeBtn = document.getElementById('saveTheme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+  function applyTheme(mode){
+    if(mode==='auto'){
+      const autoVal = prefersDark.matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', autoVal);
+    }else{
+      root.setAttribute('data-theme', mode);
+    }
+  }
+  (function(){
+    const saved = localStorage.getItem('themeMode')||'auto';
+    themeSelect.value = saved;
+    applyTheme(saved);
+  })();
+  themeSelect.addEventListener('change',()=>applyTheme(themeSelect.value));
+  saveThemeBtn.addEventListener('click',()=>{
+    localStorage.setItem('themeMode', themeSelect.value);
+    alert('Theme saved as ' + themeSelect.value);
+  });
+  prefersDark?.addEventListener?.('change',()=>{
+    if(localStorage.getItem('themeMode')==='auto') applyTheme('auto');
+  });
+
+  // --- CURRENCY FORMATTING FOR GROSS AMOUNT INPUT ---
+  const grossInput = document.getElementById('gross');
+
+  function formatCurrency(input) {
+      let value = input.value.replace(/[^\d.]/g, '');
+      const parts = value.split('.');
+      let integerPart = parts[0];
+      let decimalPart = parts.length > 1 ? '.' + parts[1].substring(0, 2) : '';
+      
+      integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      
+      // Keep cursor position
+      const originalLength = input.value.length;
+      const cursorPosition = input.selectionStart;
+      
+      input.value = integerPart + decimalPart;
+      
+      const newLength = input.value.length;
+      const newCursorPosition = cursorPosition + (newLength - originalLength);
+      
+      // Avoid moving cursor if it's at the end
+      if (cursorPosition === originalLength) {
+          input.setSelectionRange(newLength, newLength);
+      } else {
+          input.setSelectionRange(newCursorPosition, newCursorPosition);
+      }
+  }
+
+  grossInput.addEventListener('input', () => formatCurrency(grossInput));
+  
+  grossInput.addEventListener('blur', () => {
+      let value = parseFloat(grossInput.value.replace(/,/g, '')) || 0;
+      grossInput.value = value.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (grossInput.value === '0.00') {
+          grossInput.value = '';
+      }
+  });
+
+
+  // --- CALCULATION HELPERS ---
+  const toCents = (n) => { if (!isFinite(n)) return 0; return Math.round(Number(n) * 100); };
+  const fromCents = (c) => (c/100);
+  const peso = (n) => isFinite(n) ? n.toLocaleString('en-PH',{style:'currency',currency:'PHP'}) : '—';
+  const pesoFromCents = (c) => peso(fromCents(c));
+  const getVal = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
+  const percentOfCents = (baseCents, bps) => Math.round(baseCents * bps / 10000);
+
+  // --- NUMBER TO WORDS (CHEQUE FORMAT) ---
+  function numberToWordsCheque(numCents) {
+    if (!isFinite(numCents)) return '—';
+    if (numCents === 0) return 'ZERO PESOS ONLY';
+
+    const pesos = Math.floor(numCents / 100);
+    const centavos = numCents % 100;
+
+    const ones = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+    const tens = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+    const thousands = ['', 'THOUSAND', 'MILLION', 'BILLION', 'TRILLION'];
+
+    function convertGroup(n) {
+        let part = '';
+        if (n >= 100) {
+            part += ones[Math.floor(n / 100)] + ' HUNDRED ';
+            n %= 100;
+        }
+        if (n >= 20) {
+            part += tens[Math.floor(n / 10)];
+            if (n % 10 > 0) {
+                part += ' ' + ones[n % 10];
+            }
+        } else if (n > 0) {
+            part += ones[n];
+        }
+        return part.trim();
+    }
+
+    let words = '';
+    if (pesos > 0) {
+        let tempPesos = pesos;
+        let i = 0;
+        let parts = [];
+        while (tempPesos > 0) {
+            let chunk = tempPesos % 1000;
+            if (chunk > 0) {
+                let chunkWords = convertGroup(chunk);
+                let scale = thousands[i] ? ' ' + thousands[i] : '';
+                parts.unshift(chunkWords + scale);
+            }
+            tempPesos = Math.floor(tempPesos / 1000);
+            i++;
+        }
+        words = parts.join(' ').trim();
+    }
+    
+    let result = words === '' ? 'ZERO' : words;
+    return `${result.toUpperCase()} AND ${centavos.toString().padStart(2, '0')}/100 PESOS ONLY`;
+  }
+
+  // --- ATC CODES & UI LOGIC ---
+  const ATC_UPPER = { individual: { goods: 'WI640', services: 'WI157' }, corporation: { goods: 'WC640', services: 'WC157' } };
+  const ATC_LOWER_VAT = { goods: 'WV010', services: 'WV020' };
+  const ATC_LOWER_NONVAT = 'WB080';
+
+  const stdOptions = document.getElementById('stdOptions');
+  const disableStd = (flag) => {
+    stdOptions.classList.toggle('disabled', flag);
+    stdOptions.querySelectorAll('input').forEach(i => i.disabled = flag);
+  };
+
+  document.querySelectorAll('input[name="special"]').forEach(r => r.addEventListener('change', () => {
+    const s = getVal('special');
+    document.getElementById('aselcoRow').style.display = (s === 'aselco') ? 'block' : 'none';
+    disableStd(s !== 'none');
+  }));
+
+  // --- MAIN CALCULATION LOGIC ---
+  document.getElementById('btnCalc').addEventListener('click', () => {
+    // Parse the formatted currency string back to a number
+    const grossValue = parseFloat(document.getElementById('gross').value.replace(/,/g, '')) || 0;
+    const grossCents = toCents(grossValue);
+    
+    const special = getVal('special');
+    let upperCents = 0, lowerCents = 0; let upperAtc = '—', lowerAtc = '—';
+    let netVatCents = null;
+
+    if (special === 'water') {
+      upperCents = percentOfCents(grossCents, 200);
+      upperAtc = 'WC157';
+      lowerCents = 0;
+      lowerAtc = '—';
+    } else if (special === 'aselco') {
+      const vatableCents = toCents(parseFloat(document.getElementById('aselcoVatable').value) || 0);
+      lowerCents = percentOfCents(vatableCents, 500);
+      lowerAtc = 'ASELCO (5% of VATABLE)';
+      upperCents = 0;
+      upperAtc = '—';
+    } else {
+      const vatType = getVal('vatType');
+      const nature = getVal('nature');
+      const payeeType = getVal('payeeType');
+      netVatCents = (vatType === 'vat') ? Math.round(grossCents * 100 / 112) : null;
+      const baseCents = (vatType === 'vat') ? netVatCents : grossCents;
+      const upperBps = (nature === 'goods') ? 100 : 200;
+      const lowerBps = (vatType === 'vat') ? 500 : 300;
+      upperCents = percentOfCents(baseCents, upperBps);
+      lowerCents = percentOfCents(baseCents, lowerBps);
+      upperAtc = ATC_UPPER[payeeType][nature];
+      lowerAtc = (vatType === 'vat') ? ATC_LOWER_VAT[nature] : ATC_LOWER_NONVAT;
+    }
+
+    const totalWithheldCents = upperCents + lowerCents;
+    const netPayableCents = grossCents - totalWithheldCents;
+
+    // --- DISPLAY RESULTS ---
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('netVat').textContent = (netVatCents != null) ? pesoFromCents(netVatCents) : '—';
+    document.getElementById('upperAmt').textContent = pesoFromCents(upperCents);
+    document.getElementById('lowerAmt').textContent = pesoFromCents(lowerCents);
+    document.getElementById('upperAtc').textContent = `ATC: ${upperAtc}`;
+    document.getElementById('lowerAtc').textContent = `ATC: ${lowerAtc}`;
+    document.getElementById('totalWithheld').textContent = pesoFromCents(totalWithheldCents);
+    document.getElementById('netPayable').textContent = pesoFromCents(netPayableCents);
+    document.getElementById('netPayableWords').textContent = numberToWordsCheque(netPayableCents);
+  });
+</script>
+</body>
+</html>
