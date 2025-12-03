@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTA Client Satisfaction Survey - Interactive Quiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0056a6 0%, #0083cc 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .header {
+            background: linear-gradient(to right, #0056a6, #0083cc);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo-badge {
+            background-color: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0056a6;
+            font-size: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .control-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Progress Section */
+        .progress-section {
+            padding: 20px 25px;
+            background-color: #f0f7ff;
+            border-bottom: 1px solid #d0e2f5;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .progress-title {
+            font-size: 1.2rem;
+            color: #0056a6;
+            font-weight: 600;
+        }
+        
+        .progress-counter {
+            font-size: 1.1rem;
+            color: #0056a6;
+            font-weight: 700;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e9f5;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #00c851, #00a844);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        /* Game Content */
+        .game-content {
+            padding: 0;
+        }
+        
+        .game-step {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .game-step.active {
+            display: block;
+        }
+        
+        .step-title {
+            color: #0056a6;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f7ff;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .step-title i {
+            margin-right: 15px;
+            background-color: #e8f0f9;
+            padding: 10px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .step-description {
+            background-color: #f9fbff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #0056a6;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .game-question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f9fbff;
+            border-radius: 10px;
+            border: 1px solid #e8f0f9;
+            transition: all 0.3s;
+        }
+        
+        .game-question:hover {
+            box-shadow: 0 5px 15px rgba(0, 86, 166, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .question-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #0056a6;
+            font-size: 1.1rem;
+        }
+        
+        .answer-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+        }
+        
+        .answer-option {
+            padding: 15px;
+            background-color: white;
+            border: 2px solid #e8f0f9;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .answer-option:hover {
+            border-color: #0056a6;
+            background-color: #f0f7ff;
+        }
+        
+        .answer-option.selected {
+            border-color: #00a844;
+            background-color: #f0fff4;
+            box-shadow: 0 5px 15px rgba(0, 168, 68, 0.2);
+        }
+        
+        .answer-option input[type="radio"],
+        .answer-option input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.3);
+        }
+        
+        .answer-label {
+            font-size: 1rem;
+            color: #333;
+        }
+        
+        /* Citizen's Charter Quiz Specific Styles */
+        .cc-instruction-box {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #0056a6;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .cc-instruction-box strong {
+            color: #0056a6;
+        }
+        
+        .cc-question-block {
+            background-color: #f9fbff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #e8f0f9;
+        }
+        
+        .cc-question-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #0056a6;
+            font-size: 1.1rem;
+        }
+        
+        .cc-option {
+            padding: 15px;
+            background-color: white;
+            border: 2px solid #e8f0f9;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .cc-option:hover {
+            border-color: #0056a6;
+            background-color: #f0f7ff;
+        }
+        
+        .cc-option.selected {
+            border-color: #00a844;
+            background-color: #f0fff4;
+            box-shadow: 0 5px 15px rgba(0, 168, 68, 0.2);
+        }
+        
+        .cc-option input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.3);
+        }
+        
+        .cc-option-label {
+            font-size: 1rem;
+            color: #333;
+        }
+        
+        /* SQD Grid */
+        .sqd-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .sqd-item {
+            background-color: white;
+            border: 1px solid #e8f0f9;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .sqd-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 86, 166, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .sqd-question {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #0056a6;
+        }
+        
+        .sqd-options {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .sqd-option {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 12px 5px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .sqd-option:hover {
+            background-color: #f0f7ff;
+            border-color: #0056a6;
+        }
+        
+        .sqd-option.selected {
+            background-color: #f0fff4;
+            border-color: #00a844;
+            color: #0056a6;
+            font-weight: 600;
+        }
+        
+        .sqd-option-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Input Fields */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .input-label.required::after {
+            content: " *";
+            color: #e63946;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e8f0f9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #0056a6;
+            box-shadow: 0 0 0 3px rgba(0, 86, 166, 0.2);
+        }
+        
+        textarea.form-input {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* Navigation Buttons */
+        .game-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e8f0f9;
+        }
+        
+        .nav-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 150px;
+        }
+        
+        .nav-btn i {
+            margin-right: 10px;
+        }
+        
+        .btn-prev {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-prev:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-3px);
+        }
+        
+        .btn-next, .btn-submit {
+            background: linear-gradient(to right, #0056a6, #0083cc);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 86, 166, 0.3);
+        }
+        
+        .btn-next:hover, .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 86, 166, 0.4);
+        }
+        
+        .btn-submit {
+            background: linear-gradient(to right, #00c851, #00a844);
+        }
+        
+        .btn-submit:hover {
+            box-shadow: 0 8px 20px rgba(0, 168, 68, 0.4);
+        }
+        
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-disabled:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Completion Screen */
+        .completion-screen {
+            text-align: center;
+            padding: 50px 30px;
+            display: none;
+        }
+        
+        .completion-icon {
+            font-size: 5rem;
+            color: #00c851;
+            margin-bottom: 20px;
+            animation: bounce 1s;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        
+        .completion-title {
+            font-size: 2.2rem;
+            color: #0056a6;
+            margin-bottom: 15px;
+        }
+        
+        .completion-message {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+        
+        .reward-badge {
+            background: linear-gradient(to right, #FFD700, #FFC000);
+            color: #333;
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(255, 192, 0, 0.3);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            background-color: #f9f9f9;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .game-container {
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .answer-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .cc-option {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .sqd-options {
+                flex-direction: column;
+            }
+            
+            .sqd-option {
+                min-width: 100%;
+            }
+            
+            .game-navigation {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-btn {
+                width: 100%;
+            }
+            
+            .step-title {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .step-title i {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="control-badge">ID: <span id="control-number">ARTA-2025-001</span></div>
+            <div class="logo-badge">
+                <i class="fas fa-star"></i>
+            </div>
+            <h1>ARTA Client Satisfaction Quiz</h1>
+            <p>Help us improve government services by sharing your experience!</p>
+            <p style="margin-top: 10px; font-size: 0.85rem;">Complete the quiz and earn a "Service Champion" badge!</p>
+        </div>
+        
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <div class="progress-title">Your Progress</div>
+                <div class="progress-counter"><span id="current-step">1</span> of <span id="total-steps">5</span></div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-labels">
+                <div>Start</div>
+                <div>Complete!</div>
+            </div>
+        </div>
+        
+        <!-- Game Content -->
+        <div class="game-content">
+            <!-- Step 1: Client Info -->
+            <div class="game-step active" id="step-1">
+                <h2 class="step-title"><i class="fas fa-user-circle"></i> Let's Get Started</h2>
+                <div class="step-description">
+                    First, we need to know a little about you. This helps us understand who we're serving and improve our services for everyone.
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label required">Client type:</label>
+                    <div class="answer-options">
+                        <div class="answer-option" data-value="citizen">
+                            <input type="radio" name="client-type" id="citizen" required>
+                            <label class="answer-label" for="citizen">Citizen</label>
+                        </div>
+                        <div class="answer-option" data-value="business">
+                            <input type="radio" name="client-type" id="business" required>
+                            <label class="answer-label" for="business">Business</label>
+                        </div>
+                        <div class="answer-option" data-value="government">
+                            <input type="radio" name="client-type" id="government" required>
+                            <label class="answer-label" for="government">Government (Employee or another agency)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-question">
+                    <div class="question-title">Your Personal Details</div>
+                    <div class="form-row" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label class="input-label required">Date:</label>
+                            <input type="date" class="form-input" id="survey-date" required>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label class="input-label required">Age:</label>
+                            <input type="number" class="form-input" id="age" min="1" max="120" placeholder="Enter your age" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-question">
+                    <div class="question-title">Gender</div>
+                    <div class="answer-options">
+                        <div class="answer-option" data-value="male">
+                            <input type="radio" name="sex" id="male" required>
+                            <label class="answer-label" for="male">Male</label>
+                        </div>
+                        <div class="answer-option" data-value="female">
+                            <input type="radio" name="sex" id="female" required>
+                            <label class="answer-label" for="female">Female</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row" style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 25px;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="input-label required">Region of residence:</label>
+                        <input type="text" class="form-input" id="region" placeholder="e.g., National Capital Region (NCR)" required>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="input-label required">Service Availed:</label>
+                        <input type="text" class="form-input" id="service" placeholder="e.g., Business Permit Application" required>
+                    </div>
+                </div>
+                
+                <div class="game-navigation">
+                    <div></div> <!-- Empty div for spacing -->
+                    <button class="nav-btn btn-next" id="next-1">
+                        <i class="fas fa-arrow-right"></i> Next: Citizen's Charter
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Citizen's Charter Quiz -->
+            <div class="game-step" id="step-2">
+                <h2 class="step-title"><i class="fas fa-file-contract"></i> Citizen's Charter Quiz</h2>
+                <div class="step-description">
+                    The Citizen's Charter is our service commitment to you. It shows what services we offer, requirements, fees, and processing times.
+                </div>
+                
+                <div class="cc-instruction-box">
+                    <strong>Instructions:</strong> Please place a check mark in the designated box that corresponds to your answer on the Citizen's Charter (CC) questions. The Citizen's Charter is an official document that reflects the services of a government agency/office including its requirements, fees, and processing times among others.
+                </div>
+                
+                <div class="cc-question-block">
+                    <div class="cc-question-title">CC1. Which of the following best describes your awareness of a CC?</div>
+                    <div class="cc-options">
+                        <div class="cc-option" data-value="1">
+                            <input type="radio" name="cc1" id="cc1-1" required>
+                            <label class="cc-option-label" for="cc1-1">1. I know what a CC is and I saw this office's CC.</label>
+                        </div>
+                        <div class="cc-option" data-value="2">
+                            <input type="radio" name="cc1" id="cc1-2" required>
+                            <label class="cc-option-label" for="cc1-2">2. I know what a CC is but I did NOT see this office's CC.</label>
+                        </div>
+                        <div class="cc-option" data-value="3">
+                            <input type="radio" name="cc1" id="cc1-3" required>
+                            <label class="cc-option-label" for="cc1-3">3. I learned of the CC only when I saw this office's CC.</label>
+                        </div>
+                        <div class="cc-option" data-value="4">
+                            <input type="radio" name="cc1" id="cc1-4" required>
+                            <label class="cc-option-label" for="cc1-4">4. I do not know what a CC is and I did not see one in this office. (Answer 'N/A' on CC2 and CC3)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cc-question-block" id="cc2-block">
+                    <div class="cc-question-title">CC2. If aware of CC (answered 1-3 in CC1), would you say that the CC of this office was ...?</div>
+                    <div class="cc-options">
+                        <div class="cc-option" data-value="1">
+                            <input type="radio" name="cc2" id="cc2-1">
+                            <label class="cc-option-label" for="cc2-1">1. Easy to see</label>
+                        </div>
+                        <div class="cc-option" data-value="2">
+                            <input type="radio" name="cc2" id="cc2-2">
+                            <label class="cc-option-label" for="cc2-2">2. Somewhat easy to see</label>
+                        </div>
+                        <div class="cc-option" data-value="3">
+                            <input type="radio" name="cc2" id="cc2-3">
+                            <label class="cc-option-label" for="cc2-3">3. Difficult to see</label>
+                        </div>
+                        <div class="cc-option" data-value="4">
+                            <input type="radio" name="cc2" id="cc2-4">
+                            <label class="cc-option-label" for="cc2-4">4. Not visible at all</label>
+                        </div>
+                        <div class="cc-option" data-value="5">
+                            <input type="radio" name="cc2" id="cc2-5">
+                            <label class="cc-option-label" for="cc2-5">5. Not Applicable</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cc-question-block" id="cc3-block">
+                    <div class="cc-question-title">CC3. If aware of CC (answered codes 1-3 in CC1), how much did the CC help you in your transaction?</div>
+                    <div class="cc-options">
+                        <div class="cc-option" data-value="1">
+                            <input type="radio" name="cc3" id="cc3-1">
+                            <label class="cc-option-label" for="cc3-1">1. Helped very much</label>
+                        </div>
+                        <div class="cc-option" data-value="2">
+                            <input type="radio" name="cc3" id="cc3-2">
+                            <label class="cc-option-label" for="cc3-2">2. Somewhat helped</label>
+                        </div>
+                        <div class="cc-option" data-value="3">
+                            <input type="radio" name="cc3" id="cc3-3">
+                            <label class="cc-option-label" for="cc3-3">3. Did not help</label>
+                        </div>
+                        <div class="cc-option" data-value="4">
+                            <input type="radio" name="cc3" id="cc3-4">
+                            <label class="cc-option-label" for="cc3-4">4. Not Applicable</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-navigation">
+                    <button class="nav-btn btn-prev" id="prev-2">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button class="nav-btn btn-next" id="next-2">
+                        <i class="fas fa-arrow-right"></i> Next: Service Experience
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Service Quality Dimensions -->
+            <div class="game-step" id="step-3">
+                <h2 class="step-title"><i class="fas fa-star-half-alt"></i> Rate Your Service Experience</h2>
+                <div class="step-description">
+                    Tell us about your recent transaction experience. Your feedback helps us improve government services for everyone.
+                </div>
+                
+                <div class="sqd-grid">
+                    <!-- SQD0 -->
+                    <div class="sqd-item">
+                        <div class="sqd-question">SQD0. I am satisfied with the service that I availed.</div>
+                        <div class="sqd-options">
+                            <div class="sqd-option" data-value="sd">
+                                <div>😞</div>
+                                <span class="sqd-option-label">Strongly Disagree</span>
+                            </div>
+                            <div class="sqd-option" data-value="d">
+                                <div>🙁</div>
+                                <span class="sqd-option-label">Disagree</span>
+                            </div>
+                            <div class="sqd-option" data-value="n">
+                                <div>😐</div>
+                                <span class="sqd-option-label">Neutral</span>
+                            </div>
+                            <div class="sqd-option" data-value="a">
+                                <div>🙂</div>
+                                <span class="sqd-option-label">Agree</span>
+                            </div>
+                            <div class="sqd-option" data-value="sa">
+                                <div>😄</div>
+                                <span class="sqd-option-label">Strongly Agree</span>
+                            </div>
+                            <div class="sqd-option" data-value="na">
+                                <div>—</div>
+                                <span class="sqd-option-label">N/A</span>
+                            </div>
+                        </div>
+                        <input type="hidden" name="sqd0" required>
+                    </div>
+                    
+                    <!-- SQD1 -->
+                    <div class="sqd-item">
+                        <div class="sqd-question">SQD1. I spent a reasonable amount of time for my transaction.</div>
+                        <div class="sqd-options">
+                            <div class="sqd-option" data-value="sd">😞</div>
+                            <div class="sqd-option" data-value="d">🙁</div>
+                            <div class="sqd-option" data-value="n">😐</div>
+                            <div class="sqd-option" data-value="a">🙂</div>
+                            <div class="sqd-option" data-value="sa">😄</div>
+                            <div class="sqd-option" data-value="na">—</div>
+                        </div>
+                        <input type="hidden" name="sqd1" required>
+                    </div>
+                    
+                    <!-- SQD2 -->
+                    <div class="sqd-item">
+                        <div class="sqd-question">SQD2. The office followed the transaction's requirements and steps based on the information provided.</div>
+                        <div class="sqd-options">
+                            <div class="sqd-option" data-value="sd">😞</div>
+                            <div class="sqd-option" data-value="d">🙁</div>
+                            <div class="sqd-option" data-value="n">😐</div>
+                            <div class="sqd-option" data-value="a">🙂</div>
+                            <div class="sqd-option" data-value="sa">😄</div>
+                            <div class="sqd-option" data-value="na">—</div>
+                        </div>
+                        <input type="hidden" name="sqd2" required>
+                    </div>
+                    
+                    <!-- SQD3 -->
+                    <div class="sqd-item">
+                        <div class="sqd-question">SQD3. The steps (including payment) I needed to do for my transaction were easy and simple.</div>
+                        <div class="sqd-options">
+                            <div class="sqd-option" data-value="sd">😞</div>
+                            <div class="sqd-option" data-value="d">🙁</div>
+                            <div class="sqd-option" data-value="n">😐</div>
+                            <div class="sqd-option" data-value="a">🙂</div>
+                            <div class="sqd-option" data-value="sa">😄</div>
+                            <div class="sqd-option" data-value="na">—</div>
+                        </div>
+                        <input type="hidden" name="sqd3" required>
+                    </div>
+                    
+                    <!-- SQD4 -->
+                    <div class="sqd-item">
+                        <div class="sqd-question">SQD4. I easily found information about my transaction from the office's website.</div>
+                        <div class="sqd-options">
+                            <div class="sqd-option" data-value="sd">😞</div>
+                            <div class="sqd-option" data-value="d">🙁</div>
+                            <div class="sqd-option" data-value="n">😐</div>
+                            <div class="sqd-option" data-value="a">🙂</div>
+                            <div class="sqd-option" data-value="sa">😄</div>
+                            <div class="sqd-option" data-value="na">—</div>
+                        </div>
+                        <input type="hidden" name="sqd4" required>
+                    </div>
+                    
+                    <!-- SQD5 -->
+                    <div class="sqd-item">
+                        <div class="sqd-question">SQD5. I paid a reasonable amount of fees for my transaction. <span style="color:#666; font-size:0.9rem;">(If free, select N/A)</span></div>
+                        <div class="sqd-options">
+                            <div class="sqd-option" data-value="sd">😞</div>
+                            <div class="sqd-option" data-value="d">🙁</div>
+                            <div class="sqd-option" data-value="n">😐</div>
+                            <div class="sqd-option" data-value="a">🙂</div>
+                            <div class="sqd-option" data-value="sa">😄</div>
+                            <div class="sqd-option" data-value="na">—</div>
+                        </div>
+                        <input type="hidden" name="sqd5" required>
+                    </div>
+                    
+                    <!-- SQD6 -->
+                    <div class="sqd-item">
+                        <div class="sqd-question">SQD6. I am confident my online transaction was secure.</div>
+                        <div class="sqd-options">
+                            <div class="sqd-option" data-value="sd">😞</div>
+                            <div class="sqd-option" data-value="d">🙁</div>
+                            <div class="sqd-option" data-value="n">😐</div>
+                            <div class="sqd-option" data-value="a">🙂</div>
+                            <div class="sqd-option" data-value="sa">😄</div>
+                            <div class="sqd-option" data-value="na">—</div>
+                        </div>
+                        <input type="hidden" name="sqd6" required>
+                    </div>
+                    
+                    <!-- SQD7 -->
+                    <div class="sqd-item">
+                        <div class="sqd-question">SQD7. The office's online support was available, and (if asked questions) online support was quick to respond.</div>
+                        <div class="sqd-options">
+                            <div class="sqd-option" data-value="sd">😞</div>
+                            <div class="sqd-option" data-value="d">🙁</div>
+                            <div class="sqd-option" data-value="n">😐</div>
+                            <div class="sqd-option" data-value="a">🙂</div>
+                            <div class="sqd-option" data-value="sa">😄</div>
+                            <div class="sqd-option" data-value="na">—</div>
+                        </div>
+                        <input type="hidden" name="sqd7" required>
+                    </div>
+                    
+                    <!-- SQD8 -->
+                    <div class="sqd-item">
+                        <div class="sqd-question">SQD8. I got what I needed from the government office, or (if denied) denial of request was sufficiently explained to me.</div>
+                        <div class="sqd-options">
+                            <div class="sqd-option" data-value="sd">😞</div>
+                            <div class="sqd-option" data-value="d">🙁</div>
+                            <div class="sqd-option" data-value="n">😐</div>
+                            <div class="sqd-option" data-value="a">🙂</div>
+                            <div class="sqd-option" data-value="sa">😄</div>
+                            <div class="sqd-option" data-value="na">—</div>
+                        </div>
+                        <input type="hidden" name="sqd8" required>
+                    </div>
+                </div>
+                
+                <div class="game-navigation">
+                    <button class="nav-btn btn-prev" id="prev-3">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button class="nav-btn btn-next" id="next-3">
+                        <i class="fas fa-arrow-right"></i> Next: Final Thoughts
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Additional Feedback -->
+            <div class="game-step" id="step-4">
+                <h2 class="step-title"><i class="fas fa-comment-dots"></i> Final Thoughts</h2>
+                <div class="step-description">
+                    Almost done! Share any final suggestions or feedback to help us improve. This step is optional but greatly appreciated.
+                </div>
+                
+                <div class="game-question">
+                    <div class="question-title">How can we improve our services?</div>
+                    <textarea class="form-input" id="suggestions" placeholder="Your suggestions help us serve you better..."></textarea>
+                    <p style="color:#666; font-size:0.9rem; margin-top: 10px;">Optional: Share any ideas or comments you have for improving government services.</p>
+                </div>
+                
+                <div class="game-question">
+                    <div class="question-title">Stay in touch (optional)</div>
+                    <input type="email" class="form-input" id="email" placeholder="Your email address (optional)">
+                    <p style="color:#666; font-size:0.9rem; margin-top: 10px;">If you'd like to receive updates or be contacted for follow-up, provide your email (optional).</p>
+                </div>
+                
+                <div class="game-navigation">
+                    <button class="nav-btn btn-prev" id="prev-4">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button class="nav-btn btn-submit" id="submit-survey">
+                        <i class="fas fa-paper-plane"></i> Submit & Earn Badge
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Completion Screen -->
+            <div class="completion-screen" id="completion-screen">
+                <div class="completion-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h2 class="completion-title">Survey Complete!</h2>
+                <p class="completion-message">
+                    Thank you for taking the time to provide valuable feedback. Your insights help us improve government services for everyone in the Philippines.
+                </p>
+                
+                <div class="reward-badge">
+                    <i class="fas fa-award"></i> Service Champion Badge Earned!
+                </div>
+                
+                <p style="margin-top: 30px; color: #666; font-size: 0.95rem;">
+                    Your submission has been recorded. Reference ID: <strong id="submission-id">ARTA-2025-001</strong>
+                </p>
+                
+                <div style="margin-top: 40px;">
+                    <button class="nav-btn btn-next" id="new-survey" style="background: linear-gradient(to right, #0056a6, #0083cc);">
+                        <i class="fas fa-redo"></i> Start New Survey
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Thank you for helping us improve government services in the Philippines.</p>
+            <p style="margin-top: 5px;"><strong>Anti-Red Tape Authority</strong> | Promoting efficiency in government service delivery</p>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            currentStep: 1,
+            totalSteps: 4,
+            progress: 0,
+            answers: {}
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Generate a random control number
+            generateControlNumber();
+            
+            // Set today's date as default
+            document.getElementById('survey-date').valueAsDate = new Date();
+            
+            // Initialize progress bar
+            updateProgress();
+            
+            // Set up event listeners for answer options
+            setupAnswerOptions();
+            
+            // Set up SQD option selectors
+            setupSQDOptions();
+            
+            // Set up navigation
+            setupNavigation();
+            
+            // Handle CC1 change for conditional questions
+            setupCCConditional();
+        });
+        
+        // Generate random control number
+        function generateControlNumber() {
+            const year = new Date().getFullYear();
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            const controlNum = `ARTA-${year}-${randomNum}`;
+            document.getElementById('control-number').textContent = controlNum;
+            return controlNum;
+        }
+        
+        // Update progress bar and counter
+        function updateProgress() {
+            const progressPercentage = ((gameState.currentStep - 1) / gameState.totalSteps) * 100;
+            document.getElementById('progress-fill').style.width = `${progressPercentage}%`;
+            document.getElementById('current-step').textContent = gameState.currentStep;
+            document.getElementById('total-steps').textContent = gameState.totalSteps;
+        }
+        
+        // Set up answer option selection
+        function setupAnswerOptions() {
+            // For radio button options
+            document.querySelectorAll('.answer-option, .cc-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    // Don't trigger if clicking the input directly
+                    if (e.target.type === 'radio' || e.target.type === 'checkbox') return;
+                    
+                    const input = this.querySelector('input');
+                    if (input) {
+                        input.checked = true;
+                        
+                        // Update visual selection
+                        const container = this.closest('.answer-options') || this.closest('.cc-options');
+                        if (container) {
+                            const options = container.querySelectorAll('.answer-option, .cc-option');
+                            options.forEach(opt => opt.classList.remove('selected'));
+                            this.classList.add('selected');
+                            
+                            // Trigger change event for conditional logic
+                            input.dispatchEvent(new Event('change'));
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Set up SQD option selection
+        function setupSQDOptions() {
+            document.querySelectorAll('.sqd-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const sqdItem = this.closest('.sqd-item');
+                    const hiddenInput = sqdItem.querySelector('input[type="hidden"]');
+                    const value = this.getAttribute('data-value');
+                    
+                    // Update visual selection
+                    const options = sqdItem.querySelectorAll('.sqd-option');
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Update hidden input value
+                    hiddenInput.value = value;
+                    
+                    // Validate step
+                    validateCurrentStep();
+                });
+            });
+        }
+        
+        // Set up CC1 conditional questions
+        function setupCCConditional() {
+            const cc1Options = document.querySelectorAll('input[name="cc1"]');
+            const cc2Block = document.getElementById('cc2-block');
+            const cc3Block = document.getElementById('cc3-block');
+            
+            // Initially hide CC2 and CC3
+            cc2Block.style.display = 'none';
+            cc3Block.style.display = 'none';
+            
+            cc1Options.forEach(option => {
+                option.addEventListener('change', function() {
+                    const value = this.value;
+                    
+                    if (value === '4') {
+                        // Hide CC2 and CC3
+                        cc2Block.style.display = 'none';
+                        cc3Block.style.display = 'none';
+                        
+                        // Auto-select N/A for CC2 and CC3
+                        document.getElementById('cc2-5').checked = true;
+                        document.getElementById('cc3-4').checked = true;
+                        
+                        // Update visual selection
+                        document.querySelectorAll('.cc-option').forEach(opt => {
+                            if (opt.querySelector('#cc2-5') || opt.querySelector('#cc3-4')) {
+                                opt.classList.add('selected');
+                            }
+                        });
+                    } else {
+                        // Show CC2 and CC3
+                        cc2Block.style.display = 'block';
+                        cc3Block.style.display = 'block';
+                        
+                        // Clear N/A selections
+                        document.getElementById('cc2-5').checked = false;
+                        document.getElementById('cc3-4').checked = false;
+                        
+                        // Update visual selection
+                        document.querySelectorAll('.cc-option').forEach(opt => {
+                            if (opt.querySelector('#cc2-5') || opt.querySelector('#cc3-4')) {
+                                opt.classList.remove('selected');
+                            }
+                        });
+                    }
+                    
+                    // Validate step
+                    validateCurrentStep();
+                });
+            });
+        }
+        
+        // Set up navigation
+        function setupNavigation() {
+            // Next buttons
+            document.getElementById('next-1').addEventListener('click', () => navigateToStep(2));
+            document.getElementById('next-2').addEventListener('click', () => navigateToStep(3));
+            document.getElementById('next-3').addEventListener('click', () => navigateToStep(4));
+            
+            // Previous buttons
+            document.getElementById('prev-2').addEventListener('click', () => navigateToStep(1));
+            document.getElementById('prev-3').addEventListener('click', () => navigateToStep(2));
+            document.getElementById('prev-4').addEventListener('click', () => navigateToStep(3));
+            
+            // Submit button
+            document.getElementById('submit-survey').addEventListener('click', submitSurvey);
+            
+            // New survey button
+            document.getElementById('new-survey').addEventListener('click', resetSurvey);
+        }
+        
+        // Navigate to specific step
+        function navigateToStep(step) {
+            // Validate current step before proceeding
+            if (step > gameState.currentStep && !validateCurrentStep()) {
+                alert('Please complete all required questions before proceeding.');
+                return;
+            }
+            
+            // Hide current step
+            document.getElementById(`step-${gameState.currentStep}`).classList.remove('active');
+            
+            // Update game state
+            gameState.currentStep = step;
+            
+            // Show new step
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            // Update progress
+            updateProgress();
+            
+            // Scroll to top of step
+            document.getElementById(`step-${step}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // Validate current step
+        function validateCurrentStep() {
+            const currentStep = document.getElementById(`step-${gameState.currentStep}`);
+            const requiredInputs = currentStep.querySelectorAll('[required]');
+            
+            for (let input of requiredInputs) {
+                if (!input.value && !input.checked) {
+                    // For radio groups, check if any in the group is checked
+                    if (input.type === 'radio' || input.type === 'checkbox') {
+                        const name = input.name;
+                        const groupChecked = currentStep.querySelector(`input[name="${name}"]:checked`);
+                        if (!groupChecked) return false;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
+        
+        // Submit survey
+        function submitSurvey() {
+            // Validate step 4
+            if (!validateCurrentStep()) {
+                alert('Please complete all required questions before submitting.');
+                return;
+            }
+            
+            // Collect all form data
+            collectFormData();
+            
+            // Show completion screen
+            document.getElementById(`step-${gameState.currentStep}`).classList.remove('active');
+            document.getElementById('completion-screen').style.display = 'block';
+            
+            // Update submission ID
+            const submissionId = generateControlNumber();
+            document.getElementById('submission-id').textContent = submissionId;
+            
+            // Update progress to 100%
+            gameState.currentStep = 5;
+            updateProgress();
+            
+            // In a real application, you would send data to server here
+            console.log('Survey submitted with data:', gameState.answers);
+        }
+        
+        // Collect form data
+        function collectFormData() {
+            // Client info
+            gameState.answers.clientType = document.querySelector('input[name="client-type"]:checked')?.value;
+            gameState.answers.date = document.getElementById('survey-date').value;
+            gameState.answers.age = document.getElementById('age').value;
+            gameState.answers.sex = document.querySelector('input[name="sex"]:checked')?.value;
+            gameState.answers.region = document.getElementById('region').value;
+            gameState.answers.service = document.getElementById('service').value;
+            
+            // CC questions
+            gameState.answers.cc1 = document.querySelector('input[name="cc1"]:checked')?.value;
+            gameState.answers.cc2 = document.querySelector('input[name="cc2"]:checked')?.value;
+            gameState.answers.cc3 = document.querySelector('input[name="cc3"]:checked')?.value;
+            
+            // SQD questions
+            for (let i = 0; i <= 8; i++) {
+                gameState.answers[`sqd${i}`] = document.querySelector(`input[name="sqd${i}"]`)?.value;
+            }
+            
+            // Additional feedback
+            gameState.answers.suggestions = document.getElementById('suggestions').value;
+            gameState.answers.email = document.getElementById('email').value;
+        }
+        
+        // Reset survey for new submission
+        function resetSurvey() {
+            // Reset form
+            document.querySelectorAll('input, textarea, select').forEach(element => {
+                if (element.type === 'radio' || element.type === 'checkbox') {
+                    element.checked = false;
+                } else if (element.type !== 'button' && element.type !== 'submit') {
+                    element.value = '';
+                }
+            });
+            
+            // Reset visual selections
+            document.querySelectorAll('.answer-option.selected, .sqd-option.selected, .cc-option.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Reset CC conditional questions
+            const cc2Block = document.getElementById('cc2-block');
+            const cc3Block = document.getElementById('cc3-block');
+            if (cc2Block) cc2Block.style.display = 'none';
+            if (cc3Block) cc3Block.style.display = 'none';
+            
+            // Reset to step 1
+            document.getElementById('completion-screen').style.display = 'none';
+            document.querySelectorAll('.game-step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            gameState.currentStep = 1;
+            document.getElementById('step-1').classList.add('active');
+            
+            // Update progress
+            updateProgress();
+            
+            // Generate new control number
+            generateControlNumber();
+            
+            // Set today's date
+            document.getElementById('survey-date').valueAsDate = new Date();
+            
+            // Reset answers object
+            gameState.answers = {};
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Add some fun animations for when options are selected
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.answer-option') || e.target.closest('.sqd-option') || e.target.closest('.cc-option')) {
+                // Add a subtle animation effect
+                const element = e.target.closest('.answer-option') || e.target.closest('.sqd-option') || e.target.closest('.cc-option');
+                element.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    element.style.transform = '';
+                }, 150);
+            }
+        });
+    </script>
+</body>
+</html>
