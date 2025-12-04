@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#4f46e5">
+<meta name="apple-mobile-web-app-title" content="VAT Calculator">
+<title>EN School and Office Supply VAT Calculator</title>
+<style>
+  :root{
+    --bg:#f6f8fa; --card:#ffffff; --text:#0b1220; --muted:#6b7280; --chip:#eef2f7; --input:#e5e7eb; --btn:#4f46e5; --btnText:#ffffff; --btn-clear:#ef4444; --btn-clear-text:#ffffff; --btn-toggle:#6b7280; --btn-toggle-text:#ffffff; --shadow:0 2px 8px rgba(0,0,0,.08); --safe-area-inset-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  [data-theme="dark"]{
+    --bg:#0b1220; --card:#101827; --text:#e6e8ee; --muted:#9aa3b2; --chip:#1b2436; --input:#253149; --btn:#6366f1; --btnText:#ffffff; --btn-clear:#dc2626; --btn-clear-text:#ffffff; --btn-toggle:#9ca3af; --btn-toggle-text:#ffffff; --shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  
+  /* Safe area handling for iPhone X and newer */
+  @supports (padding: max(0px)) {
+    body {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+  }
+  
+  html,body{height:100%}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:16px;padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); -webkit-tap-highlight-color: transparent;}
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);max-width:760px;margin:auto;padding:20px;position:relative;min-height:auto}
+  h1{margin:0 0 8px;font-size:24px;font-weight:800;letter-spacing:-0.02em;line-height:1.2}
+  label{display:block;margin:20px 0 10px;font-weight:700;font-size:16px}
+  .radio-group{display:flex;gap:14px;flex-wrap:wrap}
+  input[type="text"], input[type="number"], select, textarea{padding:16px;border:2px solid var(--input);background:transparent;color:var(--text);border-radius:12px;width:100%;box-sizing:border-box;font-size:18px; /* Prevents zoom on iOS */ -webkit-appearance: none; appearance: none;}
+  input[type="text"]:focus, input[type="number"]:focus {outline:none;border-color:var(--btn);}
+  .results{margin-top:24px;padding:20px;background:var(--chip);border-radius:16px}
+  .row2{display:flex;justify-content:space-between;align-items:center;margin:12px 0;padding:4px 0}
+  .muted{color:var(--muted);font-size:14px;line-height:1.4}
+  .amount{font-weight:800;font-size:18px}
+  button{margin-top:14px;padding:18px 20px;border:0;border-radius:14px;font-weight:700;cursor:pointer;width:100%;font-size:18px;min-height:58px; /* Minimum touch target size */ transition: transform 0.1s ease, opacity 0.1s ease; -webkit-tap-highlight-color: transparent;}
+  button:active{transform:scale(0.98);opacity:0.9}
+  .disabled{opacity:.6;pointer-events:none}
+  .topbar{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;position:relative}
+  
+  /* Button container for side-by-side buttons on desktop */
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 24px;
+  }
+  
+  /* Toggle button container */
+  .toggle-container {
+    margin-top: 16px;
+    text-align: center;
+  }
+  
+  @media (min-width: 768px) {
+    .button-container {
+      flex-direction: row;
+      gap: 16px;
+    }
+    .button-container button {
+      flex: 1;
+    }
+  }
+  
+  /* Theme toggle styling */
+  .theme-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--chip);
+    border: 2px solid var(--input);
+    font-size: 20px;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: background-color 0.2s, border-color 0.2s;
+    margin: 0;
+    z-index: 10;
+  }
+  
+  .theme-toggle:hover {
+    background-color: var(--input);
+  }
+  
+  .theme-toggle:active {
+    transform: scale(0.95);
+  }
+  
+  /* Button styles */
+  #btnCalc {
+    background: var(--btn);
+    color: var(--btnText);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  #btnClear {
+    background: var(--btn-clear);
+    color: var(--btn-clear-text);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  #toggleReport {
+    background: var(--btn-toggle);
+    color: var(--btn-toggle-text);
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    min-height: 48px;
+    width: 100%;
+    margin: 12px auto 0;
+    display: block;
+    border-radius: 12px;
+  }
+  
+  /* Compact fixed parameters display */
+  .compact-params {
+    margin: 16px 0 24px;
+    padding: 12px 16px;
+    background: var(--chip);
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .param-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .param-label {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 13px;
+  }
+  
+  .param-value {
+    color: var(--btn);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  
+  /* Text report styling */
+  .text-report {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--chip);
+    border-radius: 16px;
+    display: none;
+  }
+  
+  .text-report h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  .text-report pre {
+    white-space: pre-wrap;
+    font-family: 'SF Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+    padding: 16px;
+    background: var(--card);
+    border-radius: 12px;
+    overflow-x: auto;
+    border: 1px solid var(--input);
+  }
+  
+  .copy-btn {
+    margin-top: 16px;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    min-height: 48px;
+    width: 100%;
+    background: var(--btn);
+    color: var(--btnText);
+    border-radius: 12px;
+  }
+  
+  /* Mobile-specific styles */
+  @media (max-width: 767px) {
+    body {
+      padding: 12px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    }
+    
+    .card {
+      padding: 20px 16px;
+      border-radius: 20px;
+    }
+    
+    h1 {
+      font-size: 22px;
+      padding-right: 50px; /* Space for theme toggle */
+    }
+    
+    .compact-params {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 14px;
+    }
+    
+    .param-item {
+      min-width: 100%;
+      justify-content: space-between;
+    }
+    
+    input[type="text"] {
+      font-size: 20px; /* Larger font for easier reading */
+      padding: 18px;
+      border-radius: 14px;
+    }
+    
+    .amount {
+      font-size: 17px;
+    }
+    
+    .row2 {
+      margin: 10px 0;
+    }
+    
+    .results {
+      padding: 18px;
+    }
+  }
+  
+  /* iPhone XR specific optimizations */
+  @media only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
+    .card {
+      padding: 20px;
+    }
+    
+    h1 {
+      font-size: 24px;
+    }
+    
+    .compact-params {
+      margin: 18px 0 28px;
+    }
+    
+    button {
+      min-height: 60px;
+    }
+  }
+  
+  /* iOS-specific adjustments */
+  @supports (-webkit-touch-callout: none) {
+    /* CSS specific to iOS devices */
+    input[type="text"], input[type="number"], select, button {
+      -webkit-appearance: none;
+      border-radius: 12px;
+    }
+    
+    .card {
+      border-radius: 20px;
+    }
+    
+    button, input[type="text"] {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Improve scrolling on iOS */
+    .text-report pre {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+  
+  /* Improve touch targets for radio labels */
+  .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+  }
+  
+  /* Better spacing for mobile */
+  .results .row2 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  @media (min-width: 480px) {
+    .results .row2 {
+      flex-direction: row;
+      align-items: center;
+    }
+    
+    .compact-params {
+      justify-content: space-between;
+      gap: 16px;
+    }
+  }
+  
+  /* Adjust for notch */
+  @supports (padding-top: env(safe-area-inset-top)) {
+    body {
+      padding-top: max(12px, env(safe-area-inset-top));
+    }
+  }
+  
+  /* Loading/processing state */
+  .processing {
+    position: relative;
+    pointer-events: none;
+  }
+  
+  .processing::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin-top: -10px;
+    margin-left: -10px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Keyboard avoiding for iOS */
+  .keyboard-avoiding {
+    padding-bottom: 300px !important;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="topbar">
+    <div>
+      <h1>EN School & Office Supply VAT Calculator</h1>
+      <p class="muted" style="margin:0;">Based on Easy 2307 Calculator v5.0 | Fixed Parameters</p>
+      <p class="muted" style="margin:0;">Developed by: Kevin Glenn Labonete | Sofinity Tech © 2025</p>
+    </div>
+    <button id="themeToggle" class="theme-toggle" title="Toggle theme">🌓</button>
+  </div>
+
+  <!-- Compact Fixed Parameters Display -->
+  <div class="compact-params">
+    <div class="param-item">
+      <span class="param-label">Special Case:</span>
+      <span class="param-value">None</span>
+    </div>
+    <div class="param-item">
+      <span class="param-label">VAT Type:</span>
+      <span class="param-value">VAT Registered</span>
+    </div>
+    <div class="param-item">
+      <span class="param-label">Nature:</span>
+      <span class="param-value">Goods</span>
+    </div>
+    <div class="param-item">
+      <span class="param-label">Payee Type:</span>
+      <span class="param-value">Individual</span>
+    </div>
+  </div>
+
+  <label>Gross Amount (₱)</label>
+  <input id="gross" type="text" inputmode="decimal" placeholder="0.00" style="text-align:right; font-weight: 600;"/>
+  <div class="muted" style="margin-top: 8px;">Maximum: ₱99,000,000.00 (99 million)</div>
+
+  <!-- Button Container for side-by-side buttons -->
+  <div class="button-container">
+    <button id="btnCalc" disabled>Compute</button>
+    <button id="btnClear">Clear All</button>
+  </div>
+
+  <div id="results" class="results" style="display:none;">
+    <div class="row2"><span><strong>Gross Amount:</strong></span><span id="grossAmt" class="amount">—</span></div>
+    <div class="row2"><span><strong>Net of VAT:</strong> <span class="muted">(if VAT)</span></span><span id="netVat" class="amount">—</span></div>
+    <div class="row2"><span><strong>Upper (EWT):</strong> <span id="upperAtc" class="muted">—</span></span><span id="upperAmt" class="amount">—</span></div>
+    <div class="row2"><span><strong>Lower (Business Tax):</strong> <span id="lowerAtc" class="muted">—</span></span><span id="lowerAmt" class="amount">—</span></div>
+    <hr style="border: none; border-top: 1px solid var(--input); margin: 20px 0;" />
+    <div class="row2"><span><strong>Total Withheld</strong></span><span id="totalWithheld" class="amount">—</span></div>
+    <div class="row2"><span><strong>Net Payable</strong></span><span id="netPayable" class="amount">—</span></div>
+    <div class="row2" style="align-items: flex-start; margin-top: 16px;"><span><strong>In Words:</strong></span><span id="netPayableWords" class="amount" style="font-size: 14px; text-align: right; line-height: 1.4; max-width: 60%;">—</span></div>
+    <p class="muted" style="margin-top: 16px; font-size: 12px;">ATC mapping: Upper – WI640 (Individual Goods). Lower – WV010 (Goods VAT).</p>
+    
+    <!-- Toggle button for text report -->
+    <div class="toggle-container">
+      <button id="toggleReport" style="display:none;">Show Text Report</button>
+    </div>
+  </div>
+  
+  <!-- Text Report Section -->
+  <div id="textReport" class="text-report">
+    <h3 style="margin-top:0;">Text Report</h3>
+    <pre id="reportContent"></pre>
+    <button id="copyReport" class="copy-btn">Copy Report to Clipboard</button>
+  </div>
+</div>
+
+<script>
+  // --- SIMPLE THEME TOGGLE LOGIC ---
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+  
+  // Theme modes: light, dark, auto
+  let currentMode = 'auto';
+  
+  function applyTheme(mode) {
+    currentMode = mode;
+    
+    if (mode === 'auto') {
+      const autoVal = prefersDark.matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', autoVal);
+      themeToggle.textContent = '🌓'; // System icon
+    } else if (mode === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+      themeToggle.textContent = '🌙'; // Moon icon
+    } else {
+      root.setAttribute('data-theme', 'light');
+      themeToggle.textContent = '☀️'; // Sun icon
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('themeMode', mode);
+  }
+  
+  // Initialize theme on load
+  (function() {
+    const saved = localStorage.getItem('themeMode') || 'auto';
+    applyTheme(saved);
+  })();
+  
+  // Toggle through themes on click
+  themeToggle.addEventListener('click', () => {
+    if (currentMode === 'auto') {
+      applyTheme('light');
+    } else if (currentMode === 'light') {
+      applyTheme('dark');
+    } else {
+      applyTheme('auto');
+    }
+  });
+  
+  // Listen for system theme changes when in auto mode
+  prefersDark?.addEventListener?.('change', () => {
+    if (currentMode === 'auto') applyTheme('auto');
+  });
+
+  // --- CONSTANTS ---
+  const MAX_AMOUNT = 99000000; // 99 million pesos
+  
+  // Fixed parameters (as requested)
+  const FIXED_PARAMS = {
+    special: 'none',
+    vatType: 'vat',
+    nature: 'goods',
+    payeeType: 'individual'
+  };
+  
+  // Fixed ATC codes based on parameters
+  const FIXED_ATC = {
+    upper: 'WI640', // Individual, Goods
+    lower: 'WV010'  // VAT Registered, Goods
+  };
+
+  // --- CURRENCY FORMATTING FOR GROSS AMOUNT INPUT ---
+  const grossInput = document.getElementById('gross');
+
+  function formatCurrency(input) {
+      let value = input.value.replace(/[^\d.]/g, '');
+      const parts = value.split('.');
+      let integerPart = parts[0];
+      let decimalPart = parts.length > 1 ? '.' + parts[1].substring(0, 2) : '';
+      
+      integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      
+      // Keep cursor position
+      const originalLength = input.value.length;
+      const cursorPosition = input.selectionStart;
+      
+      input.value = integerPart + decimalPart;
+      
+      const newLength = input.value.length;
+      const newCursorPosition = cursorPosition + (newLength - originalLength);
+      
+      // Avoid moving cursor if it's at the end
+      if (cursorPosition === originalLength) {
+          input.setSelectionRange(newLength, newLength);
+      } else {
+          input.setSelectionRange(newCursorPosition, newCursorPosition);
+      }
+  }
+
+  // Handle iOS numeric keyboard
+  grossInput.addEventListener('focus', function() {
+    // On iOS, ensure the input is scrolled into view properly
+    setTimeout(() => {
+      this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  });
+
+  grossInput.addEventListener('input', () => {
+    formatCurrency(grossInput);
+    
+    // Check if the value exceeds maximum while typing
+    const rawValue = grossInput.value.replace(/,/g, '');
+    const numericValue = parseFloat(rawValue) || 0;
+    
+    if (numericValue > MAX_AMOUNT) {
+      // Cap at maximum amount and show warning
+      grossInput.value = MAX_AMOUNT.toLocaleString('en-PH', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+      
+      // Show a visual warning
+      grossInput.style.borderColor = '#ef4444';
+      grossInput.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.2)';
+      setTimeout(() => {
+        grossInput.style.borderColor = '';
+        grossInput.style.boxShadow = '';
+      }, 1500);
+    }
+  });
+  
+  grossInput.addEventListener('blur', () => {
+      let value = parseFloat(grossInput.value.replace(/,/g, '')) || 0;
+      
+      // Cap the value at maximum amount
+      if (value > MAX_AMOUNT) {
+          value = MAX_AMOUNT;
+      }
+      
+      grossInput.value = value.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (grossInput.value === '0.00') {
+          grossInput.value = '';
+      }
+      
+      // Re-validate inputs after formatting
+      validateInputs();
+  });
+
+  // --- CALCULATION HELPERS ---
+  const toCents = (n) => { 
+      if (!isFinite(n)) return 0; 
+      // Cap at maximum amount in cents (99 million * 100)
+      const cappedValue = Math.min(n, MAX_AMOUNT);
+      return Math.round(Number(cappedValue) * 100); 
+  };
+  const fromCents = (c) => (c/100);
+  const peso = (n) => isFinite(n) ? n.toLocaleString('en-PH',{style:'currency',currency:'PHP'}) : '—';
+  const pesoFromCents = (c) => peso(fromCents(c));
+  const percentOfCents = (baseCents, bps) => Math.round(baseCents * bps / 10000);
+
+  // --- FIXED NUMBER TO WORDS (CHEQUE FORMAT) ---
+  function numberToWordsCheque(numCents) {
+    if (!isFinite(numCents)) return '—';
+    if (numCents === 0) return 'ZERO PESOS ONLY';
+
+    const pesos = Math.floor(numCents / 100);
+    const centavos = numCents % 100;
+
+    const ones = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+    const tens = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+    const thousands = ['', 'THOUSAND', 'MILLION', 'BILLION', 'TRILLION'];
+
+    function convertGroup(n) {
+        let part = '';
+        if (n >= 100) {
+            part += ones[Math.floor(n / 100)] + ' HUNDRED ';
+            n %= 100;
+        }
+        if (n >= 20) {
+            part += tens[Math.floor(n / 10)];
+            if (n % 10 > 0) {
+                part += ' ' + ones[n % 10];
+            }
+        } else if (n > 0) {
+            part += ones[n];
+        }
+        return part.trim();
+    }
+
+    let words = '';
+    if (pesos > 0) {
+        let tempPesos = pesos;
+        let i = 0;
+        let parts = [];
+        while (tempPesos > 0) {
+            let chunk = tempPesos % 1000;
+            if (chunk > 0) {
+                let chunkWords = convertGroup(chunk);
+                let scale = thousands[i] ? ' ' + thousands[i] : '';
+                parts.unshift(chunkWords + scale);
+            }
+            tempPesos = Math.floor(tempPesos / 1000);
+            i++;
+        }
+        words = parts.join(' ').trim();
+    }
+    
+    let result = words === '' ? 'ZERO' : words;
+    
+    // Fixed formatting based on examples
+    if (centavos === 0) {
+        return `${result.toUpperCase()} PESOS ONLY`;
+    } else {
+        return `${result.toUpperCase()} PESOS AND ${centavos.toString().padStart(2, '0')}/100 ONLY`;
+    }
+  }
+
+  // --- INPUT VALIDATION FOR COMPUTE BUTTON ---
+  function validateInputs() {
+    const grossValue = parseFloat(document.getElementById('gross').value.replace(/,/g, '')) || 0;
+    let isValid = false;
+    
+    // Only check gross amount (must be at least 1.00 and not exceed maximum)
+    isValid = grossValue >= 1.00 && grossValue <= MAX_AMOUNT;
+    
+    document.getElementById('btnCalc').disabled = !isValid;
+  }
+
+  // Add event listeners for input validation
+  document.getElementById('gross').addEventListener('input', validateInputs);
+
+  // --- CLEAR BUTTON FUNCTIONALITY ---
+  document.getElementById('btnClear').addEventListener('click', () => {
+    // Check if there's any input or results to clear
+    const hasInput = document.getElementById('gross').value.trim() !== '';
+    const hasResults = document.getElementById('results').style.display !== 'none';
+    const hasReport = document.getElementById('textReport').style.display !== 'none';
+    const hasToggle = document.getElementById('toggleReport').style.display !== 'none';
+    
+    if (!hasInput && !hasResults && !hasReport && !hasToggle) {
+      return; // Nothing to clear
+    }
+    
+    // Show confirmation dialog
+    if (confirm('Are you sure you want to clear all inputs and results?')) {
+      // Clear the gross input
+      document.getElementById('gross').value = '';
+      
+      // Hide results section
+      document.getElementById('results').style.display = 'none';
+      
+      // Hide text report
+      document.getElementById('textReport').style.display = 'none';
+      
+      // Hide toggle button
+      document.getElementById('toggleReport').style.display = 'none';
+      document.getElementById('toggleReport').textContent = 'Show Text Report';
+      
+      // Reset compute button to disabled state
+      document.getElementById('btnCalc').disabled = true;
+      
+      // Focus back on the input field for convenience
+      document.getElementById('gross').focus();
+      
+      // Optional: Show a brief confirmation message (not using alert to avoid interruption)
+      console.log('Calculator cleared successfully.');
+    }
+  });
+
+  // --- TEXT REPORT TOGGLE FUNCTIONALITY ---
+  const toggleReportBtn = document.getElementById('toggleReport');
+  const textReport = document.getElementById('textReport');
+  
+  toggleReportBtn.addEventListener('click', () => {
+    if (textReport.style.display === 'none') {
+      textReport.style.display = 'block';
+      toggleReportBtn.textContent = 'Hide Text Report';
+      // Scroll to show the report
+      setTimeout(() => {
+        textReport.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    } else {
+      textReport.style.display = 'none';
+      toggleReportBtn.textContent = 'Show Text Report';
+    }
+  });
+
+  // --- TEXT REPORT GENERATION ---
+  function generateTextReport(data) {
+    const {
+      grossAmount,
+      netVat,
+      upperAmt,
+      upperAtc,
+      lowerAmt,
+      lowerAtc,
+      totalWithheld,
+      netPayable,
+      netPayableWords
+    } = data;
+
+    let report = "EN School & Office Supply VAT Calculator\n";
+    report += "===========================================\n";
+    report += "FIXED PARAMETERS:\n";
+    report += "Special Case: None\n";
+    report += "VAT Type: VAT Registered\n";
+    report += "Nature: Goods\n";
+    report += "Payee Type: Individual\n";
+    report += "===========================================\n";
+    
+    // Format gross amount without currency symbol for report
+    report += `Gross Amount: ${grossAmount}\n`;
+    report += `Net of VAT: ${netVat}\n`;
+    report += `Upper (EWT) [ATC: ${upperAtc}]: ${upperAmt}\n`;
+    report += `Lower (Business Tax) [ATC: ${lowerAtc}]: ${lowerAmt}\n`;
+    report += "------------------------------\n";
+    report += `Total Withheld: ${totalWithheld}\n`;
+    report += `Net Payable: ${netPayable}\n`;
+    report += "--- Check Mode ---\n";
+    
+    // Format net payable without currency symbol for check figures
+    const netPayableFigures = netPayable.replace('₱', '');
+    report += `Figures (Check): ${netPayableFigures}\n`;
+    report += `Words (Check): ${netPayableWords}\n`;
+    
+    return report;
+  }
+
+  // --- COPY TO CLIPBOARD FUNCTION ---
+  document.getElementById('copyReport').addEventListener('click', () => {
+    const reportContent = document.getElementById('reportContent').textContent;
+    navigator.clipboard.writeText(reportContent).then(() => {
+      // Show a subtle confirmation instead of alert
+      const originalText = document.getElementById('copyReport').textContent;
+      document.getElementById('copyReport').textContent = '✓ Copied!';
+      document.getElementById('copyReport').style.background = '#10b981';
+      setTimeout(() => {
+        document.getElementById('copyReport').textContent = originalText;
+        document.getElementById('copyReport').style.background = '';
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      alert('Failed to copy report to clipboard. Please select and copy manually.');
+    });
+  });
+
+  // --- MAIN CALCULATION LOGIC ---
+  document.getElementById('btnCalc').addEventListener('click', () => {
+    // Show processing state
+    const computeBtn = document.getElementById('btnCalc');
+    const originalText = computeBtn.textContent;
+    computeBtn.classList.add('processing');
+    computeBtn.textContent = 'Calculating...';
+    
+    // Small delay to show processing state
+    setTimeout(() => {
+      // Parse the formatted currency string back to a number
+      const grossValue = parseFloat(document.getElementById('gross').value.replace(/,/g, '')) || 0;
+      const grossCents = toCents(grossValue);
+      
+      // Use fixed parameters
+      const special = FIXED_PARAMS.special; // 'none'
+      const vatType = FIXED_PARAMS.vatType; // 'vat'
+      const nature = FIXED_PARAMS.nature; // 'goods'
+      const payeeType = FIXED_PARAMS.payeeType; // 'individual'
+      
+      let upperCents = 0, lowerCents = 0;
+      let upperAtc = '—', lowerAtc = '—';
+      let netVatCents = null;
+
+      // Only calculate for VAT Registered, Goods, Individual with no special cases
+      if (vatType === 'vat') {
+        // Calculate net of VAT (gross amount includes 12% VAT)
+        netVatCents = Math.round(grossCents * 100 / 112);
+        
+        // Upper (EWT) - 1% for goods
+        const upperBps = 100; // 1% for goods
+        upperCents = percentOfCents(netVatCents, upperBps);
+        
+        // Lower (Business Tax) - 5% for VAT
+        const lowerBps = 500; // 5% for VAT
+        lowerCents = percentOfCents(netVatCents, lowerBps);
+      }
+      
+      // Set fixed ATC codes
+      upperAtc = FIXED_ATC.upper; // 'WI640'
+      lowerAtc = FIXED_ATC.lower; // 'WV010'
+
+      const totalWithheldCents = upperCents + lowerCents;
+      const netPayableCents = grossCents - totalWithheldCents;
+
+      // --- DISPLAY RESULTS ---
+      document.getElementById('results').style.display = 'block';
+      // Show the toggle button
+      document.getElementById('toggleReport').style.display = 'block';
+      
+      // Display Gross Amount (first row)
+      document.getElementById('grossAmt').textContent = pesoFromCents(grossCents);
+      // Display Net of VAT
+      document.getElementById('netVat').textContent = (netVatCents != null) ? pesoFromCents(netVatCents) : '—';
+      document.getElementById('upperAmt').textContent = pesoFromCents(upperCents);
+      document.getElementById('lowerAmt').textContent = pesoFromCents(lowerCents);
+      document.getElementById('upperAtc').textContent = `ATC: ${upperAtc}`;
+      document.getElementById('lowerAtc').textContent = `ATC: ${lowerAtc}`;
+      document.getElementById('totalWithheld').textContent = pesoFromCents(totalWithheldCents);
+      document.getElementById('netPayable').textContent = pesoFromCents(netPayableCents);
+      document.getElementById('netPayableWords').textContent = numberToWordsCheque(netPayableCents);
+
+      // --- GENERATE TEXT REPORT ---
+      const reportData = {
+        grossAmount: pesoFromCents(grossCents),
+        netVat: (netVatCents != null) ? pesoFromCents(netVatCents) : '—',
+        upperAmt: pesoFromCents(upperCents),
+        upperAtc: upperAtc,
+        lowerAmt: pesoFromCents(lowerCents),
+        lowerAtc: lowerAtc,
+        totalWithheld: pesoFromCents(totalWithheldCents),
+        netPayable: pesoFromCents(netPayableCents),
+        netPayableWords: numberToWordsCheque(netPayableCents)
+      };
+
+      const textReportContent = generateTextReport(reportData);
+      document.getElementById('reportContent').textContent = textReportContent;
+      
+      // Hide text report by default, show toggle button
+      document.getElementById('textReport').style.display = 'none';
+      document.getElementById('toggleReport').textContent = 'Show Text Report';
+      
+      // Scroll to results
+      setTimeout(() => {
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+      
+      // Reset button state
+      computeBtn.classList.remove('processing');
+      computeBtn.textContent = originalText;
+    }, 300);
+  });
+
+  // Initialize validation on page load
+  validateInputs();
+  
+  // Handle iOS keyboard appearance
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+    // Add class when keyboard appears (approximation)
+    window.addEventListener('resize', function() {
+      if (document.activeElement === grossInput) {
+        document.body.classList.add('keyboard-avoiding');
+      }
+    });
+    
+    grossInput.addEventListener('blur', function() {
+      document.body.classList.remove('keyboard-avoiding');
+    });
+  }
+</script>
+</body>
+</html>
