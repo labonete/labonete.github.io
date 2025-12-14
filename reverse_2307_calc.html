@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Easy 2307 Calculator version 5.1</title>
+<style>
+  :root{
+    --bg:#f6f8fa; --card:#ffffff; --text:#0b1220; --muted:#6b7280; --chip:#eef2f7; --input:#e5e7eb; --btn:#4f46e5; --btnText:#ffffff; --shadow:0 2px 8px rgba(0,0,0,.08);
+    --highlight-bg: rgba(79, 70, 229, 0.1); /* Light purple background for highlight */
+    --highlight-border: rgba(79, 70, 229, 0.3); /* Purple border for highlight */
+  }
+  [data-theme="dark"]{
+    --bg:#0b1220; --card:#101827; --text:#e6e8ee; --muted:#9aa3b2; --chip:#1b2436; --input:#253149; --btn:#6366f1; --btnText:#ffffff; --shadow:0 8px 24px rgba(0,0,0,.35);
+    --highlight-bg: rgba(99, 102, 241, 0.2); /* Darker purple for dark mode */
+    --highlight-border: rgba(99, 102, 241, 0.4);
+  }
+  html,body{height:100%}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:16px}
+  .card{background:var(--card);border-radius:10px;box-shadow:var(--shadow);max-width:760px;margin:auto;padding:16px}
+  h1{margin:0 0 4px;font-size:20px}
+  label{display:block;margin:12px 0 6px;font-weight:600}
+  .radio-group{display:flex;gap:14px;flex-wrap:wrap}
+  input[type="text"], input[type="number"], select, textarea{padding:12px;border:1px solid var(--input);background:transparent;color:var(--text);border-radius:10px;min-width:100%;box-sizing:border-box;font-size:16px; /* Prevents zoom on iOS */}
+  .results{margin-top:18px;padding:12px;background:var(--chip);border-radius:8px}
+  .row2{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+  .muted{color:var(--muted);font-size:12px}
+  .amount{font-weight:700}
+  .button-container{display:flex;gap:12px;margin-top:14px;flex-direction:column}
+  button{padding:14px 16px;border:0;border-radius:10px;background:var(--btn);color:var(--btnText);font-weight:700;cursor:pointer;width:100%;font-size:16px;min-height:44px; /* Minimum touch target size */}
+  .btn-secondary{background:var(--chip);color:var(--text);}
+  .disabled{opacity:.6;pointer-events:none}
+  .topbar{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+  
+  /* Highlight styling for reverse calculator */
+  .highlight-row {
+    background-color: var(--highlight-bg);
+    border: 2px solid var(--highlight-border);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+  }
+  
+  .highlight-row .amount {
+    font-size: 18px;
+    color: var(--btn);
+  }
+  
+  .highlight-row span:first-child {
+    font-weight: 700;
+    color: var(--btn);
+  }
+  
+  /* Theme toggle styling */
+  .theme-toggle {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    margin: 0;
+  }
+  
+  .theme-toggle:hover {
+    background-color: var(--chip);
+  }
+  
+  .theme-toggle:active {
+    transform: scale(0.95);
+  }
+  
+  /* Text report styling */
+  .text-report {
+    margin-top: 18px;
+    padding: 12px;
+    background: var(--chip);
+    border-radius: 8px;
+    display: none;
+  }
+  
+  .text-report pre {
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0;
+    padding: 10px;
+    background: var(--card);
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+  
+  .copy-btn {
+    margin-top: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+    min-height: auto;
+    width: auto;
+  }
+  
+  /* Mode toggle styling */
+  .mode-toggle {
+    background: var(--chip);
+    color: var(--text);
+    border: 2px solid var(--input);
+    margin-bottom: 16px;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  
+  .mode-toggle:hover {
+    background: var(--input);
+  }
+  
+  .mode-toggle.active {
+    background: var(--btn);
+    color: var(--btnText);
+    border-color: var(--btn);
+  }
+  
+  .reverse-input-section {
+    margin-top: 12px;
+    display: none;
+  }
+  
+  /* Mobile-specific styles */
+  @media (min-width: 768px) {
+    body{padding:24px}
+    .card{padding:20px}
+    .topbar{flex-direction:row;justify-content:space-between;align-items:center;gap:0}
+    input[type="text"], input[type="number"], select{min-width:200px}
+    .button-container{flex-direction:row}
+    .button-container button{width:auto;flex:1}
+    .theme-toggle { right: 24px; }
+  }
+  
+  /* iOS-specific adjustments */
+  @supports (-webkit-touch-callout: none) {
+    input[type="text"], input[type="number"], select, button {
+      -webkit-appearance: none;
+    }
+  }
+  
+  /* Radio button improvements for mobile */
+  input[type="radio"] {
+    min-width: 18px;
+    min-height: 18px;
+  }
+  
+  /* Improve touch targets for radio labels */
+  .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+  }
+  
+  /* Better spacing for mobile */
+  #aselcoRow {
+    margin-top: 12px;
+  }
+  
+  /* Adjust results section for mobile */
+  .results .row2 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  @media (min-width: 480px) {
+    .results .row2 {
+      flex-direction: row;
+      align-items: center;
+    }
+    
+    .highlight-row {
+      padding: 12px 16px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="topbar">
+    <div>
+      <h1>Easy 2307 Calculator version 5.1</h1>
+      <p class="muted" style="margin:0;">Developed by: Kevin Glenn P. Labonete</p>
+    </div>
+    <button id="themeToggle" class="theme-toggle" title="Toggle theme">🌓</button>
+  </div>
+
+  <!-- Calculator Mode Toggle -->
+  <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+    <div id="normalModeToggle" class="mode-toggle active" style="flex: 1; justify-content: center;">
+      <span>📊</span> Normal Calculator (Gross to Net)
+    </div>
+    <div id="reverseModeToggle" class="mode-toggle" style="flex: 1; justify-content: center;">
+      <span>🔁</span> Reverse Calculator (Net to Gross)
+    </div>
+  </div>
+
+  <!-- Normal Calculator Inputs -->
+  <div id="normalInputs">
+    <label>Gross Amount (₱)</label>
+    <input id="gross" type="text" inputmode="decimal" placeholder="0.00" style="text-align:right;" maxlength="13"/>
+    <div class="muted">Maximum: ₱99,000,000.00 (99 million)</div>
+
+    <label>Special Case</label>
+    <div class="radio-group">
+      <label><input type="radio" name="special" value="none" checked> None</label>
+      <label><input type="radio" name="special" value="water"> Water District (2% of Gross)</label>
+      <label><input type="radio" name="special" value="aselco"> ASELCO (input VATABLE, 5% of VATABLE)</label>
+    </div>
+
+    <div id="aselcoRow" style="display:none;">
+      <label>ASELCO SOA – VATABLE Portion (₱)</label>
+      <input id="aselcoVatable" type="number" step="0.01" placeholder="e.g. 6,736.01" />
+      <div class="muted">Maximum: ₱99,000,000.00 (99 million). Copy the VATABLE value from the SOA; Lower = 5% of this amount.</div>
+    </div>
+
+    <div id="stdOptions">
+      <label>VAT Type</label>
+      <div class="radio-group" id="vatOptions">
+        <label><input type="radio" name="vatType" value="vat" checked> VAT Registered</label>
+        <label><input type="radio" name="vatType" value="nonvat"> Non‑VAT Registered</label>
+      </div>
+
+      <label>Nature of Transaction</label>
+      <div class="radio-group" id="natureOptions">
+        <label><input type="radio" name="nature" value="goods" checked> Goods</label>
+        <label><input type="radio" name="nature" value="services"> Services</label>
+      </div>
+
+      <label>Payee Type</label>
+      <div class="radio-group" id="payeeOptions">
+        <label><input type="radio" name="payeeType" value="individual" checked> Individual</label>
+        <label><input type="radio" name="payeeType" value="corporation"> Corporation</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reverse Calculator Inputs -->
+  <div id="reverseInputs" class="reverse-input-section">
+    <label>Net Payable Amount (₱)</label>
+    <input id="netPayableInput" type="text" inputmode="decimal" placeholder="0.00" style="text-align:right;" maxlength="13"/>
+    <div class="muted">Maximum: ₱99,000,000.00 (99 million)</div>
+
+    <label>Special Case</label>
+    <div class="radio-group">
+      <label><input type="radio" name="reverseSpecial" value="none" checked> None</label>
+      <label><input type="radio" name="reverseSpecial" value="water"> Water District (2% of Gross)</label>
+      <label><input type="radio" name="reverseSpecial" value="aselco"> ASELCO (input VATABLE, 5% of VATABLE)</label>
+    </div>
+
+    <div id="reverseAselcoRow" style="display:none;">
+      <label>ASELCO SOA – VATABLE Portion (₱)</label>
+      <input id="reverseAselcoVatable" type="number" step="0.01" placeholder="e.g. 6,736.01" />
+      <div class="muted">Maximum: ₱99,000,000.00 (99 million)</div>
+    </div>
+
+    <div id="reverseStdOptions">
+      <label>VAT Type</label>
+      <div class="radio-group" id="reverseVatOptions">
+        <label><input type="radio" name="reverseVatType" value="vat" checked> VAT Registered</label>
+        <label><input type="radio" name="reverseVatType" value="nonvat"> Non‑VAT Registered</label>
+      </div>
+
+      <label>Nature of Transaction</label>
+      <div class="radio-group" id="reverseNatureOptions">
+        <label><input type="radio" name="reverseNature" value="goods" checked> Goods</label>
+        <label><input type="radio" name="reverseNature" value="services"> Services</label>
+      </div>
+
+      <label>Payee Type</label>
+      <div class="radio-group" id="reversePayeeOptions">
+        <label><input type="radio" name="reversePayeeType" value="individual" checked> Individual</label>
+        <label><input type="radio" name="reversePayeeType" value="corporation"> Corporation</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-container">
+    <button id="btnCalc" disabled>Compute</button>
+    <button id="btnClear" class="btn-secondary">Clear All</button>
+  </div>
+
+  <div id="results" class="results" style="display:none;">
+    <!-- Results will be populated based on mode -->
+  </div>
+  
+  <!-- Text Report Section -->
+  <div id="textReport" class="text-report">
+    <h3 style="margin-top:0;">Text Report</h3>
+    <pre id="reportContent"></pre>
+    <button id="copyReport" class="copy-btn">Copy Report to Clipboard</button>
+  </div>
+</div>
+
+<script>
+  // --- SIMPLE THEME TOGGLE LOGIC ---
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+  
+  // Theme modes: light, dark, auto
+  let currentMode = 'auto';
+  
+  function applyTheme(mode) {
+    currentMode = mode;
+    
+    if (mode === 'auto') {
+      const autoVal = prefersDark.matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', autoVal);
+      themeToggle.textContent = '🌓'; // System icon
+    } else if (mode === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+      themeToggle.textContent = '🌙'; // Moon icon
+    } else {
+      root.setAttribute('data-theme', 'light');
+      themeToggle.textContent = '☀️'; // Sun icon
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('themeMode', mode);
+  }
+  
+  // Initialize theme on load
+  (function() {
+    const saved = localStorage.getItem('themeMode') || 'auto';
+    applyTheme(saved);
+  })();
+  
+  // Toggle through themes on click
+  themeToggle.addEventListener('click', () => {
+    if (currentMode === 'auto') {
+      applyTheme('light');
+    } else if (currentMode === 'light') {
+      applyTheme('dark');
+    } else {
+      applyTheme('auto');
+    }
+  });
+  
+  // Listen for system theme changes when in auto mode
+  prefersDark?.addEventListener?.('change', () => {
+    if (currentMode === 'auto') applyTheme('auto');
+  });
+
+  // --- CALCULATOR MODE TOGGLE ---
+  let isReverseMode = false;
+  const normalModeToggle = document.getElementById('normalModeToggle');
+  const reverseModeToggle = document.getElementById('reverseModeToggle');
+  const normalInputs = document.getElementById('normalInputs');
+  const reverseInputs = document.getElementById('reverseInputs');
+
+  normalModeToggle.addEventListener('click', () => {
+    if (isReverseMode) {
+      isReverseMode = false;
+      normalModeToggle.classList.add('active');
+      reverseModeToggle.classList.remove('active');
+      normalInputs.style.display = 'block';
+      reverseInputs.style.display = 'none';
+      document.getElementById('results').style.display = 'none';
+      document.getElementById('textReport').style.display = 'none';
+      validateInputs();
+    }
+  });
+
+  reverseModeToggle.addEventListener('click', () => {
+    if (!isReverseMode) {
+      isReverseMode = true;
+      normalModeToggle.classList.remove('active');
+      reverseModeToggle.classList.add('active');
+      normalInputs.style.display = 'none';
+      reverseInputs.style.display = 'block';
+      document.getElementById('results').style.display = 'none';
+      document.getElementById('textReport').style.display = 'none';
+      validateInputs();
+    }
+  });
+
+  // --- CONSTANTS ---
+  const MAX_AMOUNT = 99000000; // 99 million pesos
+
+  // --- CLEAR ALL FUNCTIONALITY ---
+  document.getElementById('btnClear').addEventListener('click', function() {
+    // Reset all input fields
+    document.getElementById('gross').value = '';
+    document.getElementById('aselcoVatable').value = '';
+    document.getElementById('netPayableInput').value = '';
+    document.getElementById('reverseAselcoVatable').value = '';
+    
+    // Reset radio buttons to defaults (both modes)
+    document.querySelector('input[name="special"][value="none"]').checked = true;
+    document.querySelector('input[name="vatType"][value="vat"]').checked = true;
+    document.querySelector('input[name="nature"][value="goods"]').checked = true;
+    document.querySelector('input[name="payeeType"][value="individual"]').checked = true;
+    
+    document.querySelector('input[name="reverseSpecial"][value="none"]').checked = true;
+    document.querySelector('input[name="reverseVatType"][value="vat"]').checked = true;
+    document.querySelector('input[name="reverseNature"][value="goods"]').checked = true;
+    document.querySelector('input[name="reversePayeeType"][value="individual"]').checked = true;
+    
+    // Hide ASELCO rows
+    document.getElementById('aselcoRow').style.display = 'none';
+    document.getElementById('reverseAselcoRow').style.display = 'none';
+    
+    // Enable standard options
+    disableStd(false);
+    disableReverseStd(false);
+    
+    // Hide results and text report
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('textReport').style.display = 'none';
+    
+    // Re-enable compute button based on validation
+    validateInputs();
+  });
+
+  // --- CURRENCY FORMATTING FUNCTIONS ---
+  function formatCurrency(input) {
+    let value = input.value.replace(/[^\d.]/g, '');
+    
+    // Remove extra decimal points - only keep the first one
+    const decimalPoints = value.split('.');
+    if (decimalPoints.length > 2) {
+      value = decimalPoints[0] + '.' + decimalPoints.slice(1).join('');
+    }
+    
+    const parts = value.split('.');
+    let integerPart = parts[0];
+    let decimalPart = parts.length > 1 ? '.' + parts[1].substring(0, 2) : '';
+    
+    // Cap the integer part at 8 digits (99 million max)
+    if (integerPart.length > 8) {
+      integerPart = integerPart.substring(0, 8);
+    }
+    
+    // Parse to check if it exceeds 99 million
+    const numericValue = parseFloat(integerPart + decimalPart) || 0;
+    if (numericValue > MAX_AMOUNT) {
+      // Reset to max amount
+      const maxValue = MAX_AMOUNT.toLocaleString('en-PH', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+      input.value = maxValue;
+      validateInputs();
+      return;
+    }
+    
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    // Keep cursor position
+    const originalLength = input.value.length;
+    const cursorPosition = input.selectionStart;
+    
+    input.value = integerPart + decimalPart;
+    
+    const newLength = input.value.length;
+    const newCursorPosition = cursorPosition + (newLength - originalLength);
+    
+    // Avoid moving cursor if it's at the end
+    if (cursorPosition === originalLength) {
+      input.setSelectionRange(newLength, newLength);
+    } else {
+      input.setSelectionRange(newCursorPosition, newCursorPosition);
+    }
+  }
+
+  function setupCurrencyInput(inputId) {
+    const input = document.getElementById(inputId);
+    
+    input.addEventListener('input', () => formatCurrency(input));
+    
+    input.addEventListener('blur', () => {
+      let value = parseFloat(input.value.replace(/,/g, '')) || 0;
+      
+      // Cap the value at maximum amount
+      if (value > MAX_AMOUNT) {
+        value = MAX_AMOUNT;
+      }
+      
+      input.value = value.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (input.value === '0.00') {
+        input.value = '';
+      }
+      
+      validateInputs();
+    });
+    
+    input.addEventListener('paste', (e) => {
+      e.preventDefault();
+      
+      // Get pasted text
+      const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+      
+      // Parse the pasted value
+      const pastedValue = parseFloat(pastedText.replace(/,/g, '')) || 0;
+      
+      if (pastedValue > MAX_AMOUNT) {
+        // If pasted value exceeds maximum, set to maximum
+        const maxValue = MAX_AMOUNT.toLocaleString('en-PH', { 
+          minimumFractionDigits: 2, 
+          maximumFractionDigits: 2 
+        });
+        input.value = maxValue;
+      } else {
+        // Otherwise, format the pasted value
+        input.value = pastedText;
+        formatCurrency(input);
+      }
+      
+      validateInputs();
+    });
+  }
+
+  // Setup currency inputs
+  setupCurrencyInput('gross');
+  setupCurrencyInput('netPayableInput');
+
+  // --- CALCULATION HELPERS ---
+  const toCents = (n) => { 
+    if (!isFinite(n)) return 0; 
+    // Cap at maximum amount in cents (99 million * 100)
+    const cappedValue = Math.min(n, MAX_AMOUNT);
+    return Math.round(Number(cappedValue) * 100); 
+  };
+  const fromCents = (c) => (c/100);
+  const peso = (n) => isFinite(n) ? n.toLocaleString('en-PH',{style:'currency',currency:'PHP'}) : '—';
+  const pesoFromCents = (c) => peso(fromCents(c));
+  const getVal = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
+  const getReverseVal = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
+  const percentOfCents = (baseCents, bps) => Math.round(baseCents * bps / 10000);
+
+  // --- FIXED NUMBER TO WORDS (CHEQUE FORMAT) ---
+  function numberToWordsCheque(numCents) {
+    if (!isFinite(numCents)) return '—';
+    if (numCents === 0) return 'ZERO PESOS ONLY';
+
+    const pesos = Math.floor(numCents / 100);
+    const centavos = numCents % 100;
+
+    const ones = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+    const tens = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+    const thousands = ['', 'THOUSAND', 'MILLION', 'BILLION', 'TRILLION'];
+
+    function convertGroup(n) {
+      let part = '';
+      if (n >= 100) {
+        part += ones[Math.floor(n / 100)] + ' HUNDRED ';
+        n %= 100;
+      }
+      if (n >= 20) {
+        part += tens[Math.floor(n / 10)];
+        if (n % 10 > 0) {
+          part += ' ' + ones[n % 10];
+        }
+      } else if (n > 0) {
+        part += ones[n];
+      }
+      return part.trim();
+    }
+
+    let words = '';
+    if (pesos > 0) {
+      let tempPesos = pesos;
+      let i = 0;
+      let parts = [];
+      while (tempPesos > 0) {
+        let chunk = tempPesos % 1000;
+        if (chunk > 0) {
+          let chunkWords = convertGroup(chunk);
+          let scale = thousands[i] ? ' ' + thousands[i] : '';
+          parts.unshift(chunkWords + scale);
+        }
+        tempPesos = Math.floor(tempPesos / 1000);
+        i++;
+      }
+      words = parts.join(' ').trim();
+    }
+    
+    let result = words === '' ? 'ZERO' : words;
+    
+    // Fixed formatting based on examples
+    if (centavos === 0) {
+      return `${result.toUpperCase()} PESOS ONLY`;
+    } else {
+      return `${result.toUpperCase()} PESOS AND ${centavos.toString().padStart(2, '0')}/100 ONLY`;
+    }
+  }
+
+  // --- ATC CODES & UI LOGIC ---
+  const ATC_UPPER = { individual: { goods: 'WI640', services: 'WI157' }, corporation: { goods: 'WC640', services: 'WC157' } };
+  const ATC_LOWER_VAT = { goods: 'WV010', services: 'WV020' };
+  const ATC_LOWER_NONVAT = 'WB080';
+
+  const stdOptions = document.getElementById('stdOptions');
+  const disableStd = (flag) => {
+    stdOptions.classList.toggle('disabled', flag);
+    stdOptions.querySelectorAll('input').forEach(i => i.disabled = flag);
+  };
+
+  const reverseStdOptions = document.getElementById('reverseStdOptions');
+  const disableReverseStd = (flag) => {
+    reverseStdOptions.classList.toggle('disabled', flag);
+    reverseStdOptions.querySelectorAll('input').forEach(i => i.disabled = flag);
+  };
+
+  // Normal mode special case handling
+  document.querySelectorAll('input[name="special"]').forEach(r => r.addEventListener('change', () => {
+    const s = getVal('special');
+    document.getElementById('aselcoRow').style.display = (s === 'aselco') ? 'block' : 'none';
+    disableStd(s !== 'none');
+    validateInputs();
+  }));
+
+  // Reverse mode special case handling
+  document.querySelectorAll('input[name="reverseSpecial"]').forEach(r => r.addEventListener('change', () => {
+    const s = getReverseVal('reverseSpecial');
+    document.getElementById('reverseAselcoRow').style.display = (s === 'aselco') ? 'block' : 'none';
+    disableReverseStd(s !== 'none');
+    validateInputs();
+  }));
+
+  // --- INPUT VALIDATION FOR COMPUTE BUTTON ---
+  function validateInputs() {
+    let isValid = false;
+    
+    if (!isReverseMode) {
+      // Normal mode validation
+      const grossValue = parseFloat(document.getElementById('gross').value.replace(/,/g, '')) || 0;
+      const special = getVal('special');
+      const aselcoVatableValue = parseFloat(document.getElementById('aselcoVatable').value) || 0;
+      
+      if (special === 'aselco') {
+        isValid = grossValue >= 1.00 && grossValue <= MAX_AMOUNT && 
+                  aselcoVatableValue >= 1.00 && aselcoVatableValue <= MAX_AMOUNT;
+      } else {
+        isValid = grossValue >= 1.00 && grossValue <= MAX_AMOUNT;
+      }
+    } else {
+      // Reverse mode validation
+      const netPayableValue = parseFloat(document.getElementById('netPayableInput').value.replace(/,/g, '')) || 0;
+      const special = getReverseVal('reverseSpecial');
+      const aselcoVatableValue = parseFloat(document.getElementById('reverseAselcoVatable').value) || 0;
+      
+      if (special === 'aselco') {
+        isValid = netPayableValue >= 1.00 && netPayableValue <= MAX_AMOUNT && 
+                  aselcoVatableValue >= 1.00 && aselcoVatableValue <= MAX_AMOUNT;
+      } else {
+        isValid = netPayableValue >= 1.00 && netPayableValue <= MAX_AMOUNT;
+      }
+    }
+    
+    document.getElementById('btnCalc').disabled = !isValid;
+  }
+
+  // Add event listeners for input validation
+  document.getElementById('gross').addEventListener('input', validateInputs);
+  document.getElementById('aselcoVatable').addEventListener('input', function() {
+    let value = parseFloat(this.value) || 0;
+    if (value > MAX_AMOUNT) {
+      this.value = MAX_AMOUNT;
+    }
+    validateInputs();
+  });
+
+  document.getElementById('netPayableInput').addEventListener('input', validateInputs);
+  document.getElementById('reverseAselcoVatable').addEventListener('input', function() {
+    let value = parseFloat(this.value) || 0;
+    if (value > MAX_AMOUNT) {
+      this.value = MAX_AMOUNT;
+    }
+    validateInputs();
+  });
+
+  // --- TEXT REPORT TOGGLE FUNCTIONALITY ---
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'btnShowReport') {
+      const textReport = document.getElementById('textReport');
+      if (textReport.style.display === 'none' || textReport.style.display === '') {
+        textReport.style.display = 'block';
+        e.target.textContent = 'Hide Text Report';
+      } else {
+        textReport.style.display = 'none';
+        e.target.textContent = 'Show Text Report';
+      }
+    }
+  });
+
+  // --- TEXT REPORT GENERATION ---
+  function generateTextReport(data, isReverse = false) {
+    let report = "Easy 2307 Calculator v5.1 — Results\n";
+    report += "==============================\n";
+    
+    if (isReverse) {
+      report += "MODE: REVERSE CALCULATOR (Net to Gross)\n";
+      report += "==============================\n";
+      report += `Net Payable Input: ${data.netPayableInput}\n`;
+      
+      if (data.aselcoSOAValue && data.aselcoSOAValue !== '—') {
+        report += `ASELCO SOA Value: ${data.aselcoSOAValue}\n`;
+      }
+      
+      report += `Computed Gross Amount: ${data.computedGross}\n`;
+      report += `Net of VAT: ${data.netVat}\n`;
+    } else {
+      report += "MODE: NORMAL CALCULATOR (Gross to Net)\n";
+      report += "==============================\n";
+      report += `Gross Amount: ${data.grossAmount}\n`;
+      
+      if (data.aselcoSOAValue && data.aselcoSOAValue !== '—') {
+        report += `ASELCO SOA Value: ${data.aselcoSOAValue}\n`;
+      }
+      
+      report += `Net of VAT: ${data.netVat}\n`;
+    }
+    
+    report += `Upper (EWT) [ATC: ${data.upperAtc}]: ${data.upperAmt}\n`;
+    report += `Lower (Business Tax) [ATC: ${data.lowerAtc}]: ${data.lowerAmt}\n`;
+    report += "------------------------------\n";
+    report += `Total Withheld: ${data.totalWithheld}\n`;
+    
+    if (isReverse) {
+      report += `Input Net Payable: ${data.netPayableInput}\n`;
+    } else {
+      report += `Net Payable: ${data.netPayable}\n`;
+      report += "--- Check Mode ---\n";
+      const netPayableFigures = data.netPayable.replace('₱', '');
+      report += `Figures (Check): ${netPayableFigures}\n`;
+      report += `Words (Check): ${data.netPayableWords}\n`;
+    }
+    
+    return report;
+  }
+
+  // --- COPY TO CLIPBOARD FUNCTION ---
+  document.getElementById('copyReport').addEventListener('click', () => {
+    const reportContent = document.getElementById('reportContent').textContent;
+    navigator.clipboard.writeText(reportContent).then(() => {
+      alert('Report copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      alert('Failed to copy report to clipboard. Please select and copy manually.');
+    });
+  });
+
+  // --- REVERSE CALCULATION FUNCTIONS ---
+  function calculateGrossFromNet(netCents, special, vatType, nature, payeeType, aselcoSOACents = 0) {
+    if (special === 'water') {
+      // Water District: 2% of gross is withheld
+      // net = gross - 0.02*gross = 0.98*gross
+      // gross = net / 0.98
+      const grossCents = Math.round(netCents * 10000 / 9800);
+      const upperCents = percentOfCents(grossCents, 200);
+      return {
+        grossCents,
+        netVatCents: null,
+        upperCents,
+        lowerCents: 0,
+        upperAtc: 'WC157',
+        lowerAtc: '—'
+      };
+    } else if (special === 'aselco') {
+      // ASELCO: 5% of VATABLE portion is withheld (lower tax only)
+      // net = gross - (0.05 * aselcoSOA)
+      // gross = net + (0.05 * aselcoSOA)
+      const lowerCents = percentOfCents(aselcoSOACents, 500);
+      const grossCents = netCents + lowerCents;
+      return {
+        grossCents,
+        netVatCents: null,
+        upperCents: 0,
+        lowerCents,
+        upperAtc: '—',
+        lowerAtc: 'WV020'
+      };
+    } else {
+      // Standard cases
+      if (vatType === 'nonvat') {
+        // Non-VAT: total rate = (upperBps + lowerBps) / 10000
+        const upperBps = (nature === 'goods') ? 100 : 200;
+        const lowerBps = 300; // Non-VAT rate
+        const totalBps = upperBps + lowerBps;
+        
+        // First approximation
+        let grossCents = Math.round(netCents * 10000 / (10000 - totalBps));
+        
+        // Test and adjust for rounding errors
+        let testUpper = Math.round(grossCents * upperBps / 10000);
+        let testLower = Math.round(grossCents * lowerBps / 10000);
+        let testNet = grossCents - (testUpper + testLower);
+        let diff = netCents - testNet;
+        
+        // Adjust if needed (usually ±1 cent)
+        if (diff !== 0) {
+          grossCents += diff;
+          // Recalculate with adjusted gross
+          testUpper = Math.round(grossCents * upperBps / 10000);
+          testLower = Math.round(grossCents * lowerBps / 10000);
+          testNet = grossCents - (testUpper + testLower);
+          diff = netCents - testNet;
+          
+          // Final adjustment if still off
+          if (diff !== 0) {
+            grossCents += (diff > 0 ? 1 : -1);
+          }
+        }
+        
+        const upperCents = Math.round(grossCents * upperBps / 10000);
+        const lowerCents = Math.round(grossCents * lowerBps / 10000);
+        const upperAtc = ATC_UPPER[payeeType][nature];
+        const lowerAtc = ATC_LOWER_NONVAT;
+        
+        return {
+          grossCents,
+          netVatCents: null,
+          upperCents,
+          lowerCents,
+          upperAtc,
+          lowerAtc
+        };
+      } else {
+        // VAT Registered - more complex due to multiple rounding steps
+        const upperBps = (nature === 'goods') ? 100 : 200;
+        const lowerBps = 500; // VAT rate
+        const combinedBps = upperBps + lowerBps;
+        
+        // Formula derivation:
+        // Let b = base amount = gross / 1.12
+        // net = gross - ((upperBps + lowerBps)/10000 * b)
+        // net = 1.12b - (combinedBps/10000 * b)
+        // net = b * (1.12 - combinedBps/10000)
+        // b = net / (1.12 - combinedBps/10000)
+        
+        // Calculate in decimal for precision
+        const divisor = 1.12 - (combinedBps / 10000);
+        const baseExact = netCents / divisor;
+        const grossExact = baseExact * 1.12;
+        
+        // Start with rounded gross
+        let grossCents = Math.round(grossExact);
+        
+        // Test and adjust for rounding errors
+        let bestGross = grossCents;
+        let bestDiff = Infinity;
+        
+        // Test a small range around the initial guess (±2 cents)
+        for (let offset = -2; offset <= 2; offset++) {
+          const testGross = grossCents + offset;
+          const testNetVat = Math.round(testGross * 100 / 112);
+          const testUpper = Math.round(testNetVat * upperBps / 10000);
+          const testLower = Math.round(testNetVat * lowerBps / 10000);
+          const testNet = testGross - (testUpper + testLower);
+          const testDiff = Math.abs(testNet - netCents);
+          
+          if (testDiff < bestDiff) {
+            bestDiff = testDiff;
+            bestGross = testGross;
+          }
+          
+          // Exact match found
+          if (testDiff === 0) {
+            break;
+          }
+        }
+        
+        // Use the best gross found
+        grossCents = bestGross;
+        const netVatCents = Math.round(grossCents * 100 / 112);
+        const upperCents = Math.round(netVatCents * upperBps / 10000);
+        const lowerCents = Math.round(netVatCents * lowerBps / 10000);
+        const upperAtc = ATC_UPPER[payeeType][nature];
+        const lowerAtc = ATC_LOWER_VAT[nature];
+        
+        return {
+          grossCents,
+          netVatCents,
+          upperCents,
+          lowerCents,
+          upperAtc,
+          lowerAtc
+        };
+      }
+    }
+  }
+
+  // --- MAIN CALCULATION LOGIC ---
+  document.getElementById('btnCalc').addEventListener('click', () => {
+    if (!isReverseMode) {
+      // NORMAL CALCULATION (Gross to Net)
+      const grossValue = parseFloat(document.getElementById('gross').value.replace(/,/g, '')) || 0;
+      const grossCents = toCents(grossValue);
+      
+      const special = getVal('special');
+      let upperCents = 0, lowerCents = 0; let upperAtc = '—', lowerAtc = '—';
+      let netVatCents = null;
+      let aselcoSOACents = 0;
+
+      if (special === 'water') {
+        upperCents = percentOfCents(grossCents, 200);
+        upperAtc = 'WC157';
+        lowerCents = 0;
+        lowerAtc = '—';
+      } else if (special === 'aselco') {
+        aselcoSOACents = toCents(parseFloat(document.getElementById('aselcoVatable').value) || 0);
+        lowerCents = percentOfCents(aselcoSOACents, 500);
+        lowerAtc = 'WV020';
+        upperCents = 0;
+        upperAtc = '—';
+      } else {
+        const vatType = getVal('vatType');
+        const nature = getVal('nature');
+        const payeeType = getVal('payeeType');
+        netVatCents = (vatType === 'vat') ? Math.round(grossCents * 100 / 112) : null;
+        const baseCents = (vatType === 'vat') ? netVatCents : grossCents;
+        const upperBps = (nature === 'goods') ? 100 : 200;
+        const lowerBps = (vatType === 'vat') ? 500 : 300;
+        upperCents = percentOfCents(baseCents, upperBps);
+        lowerCents = percentOfCents(baseCents, lowerBps);
+        upperAtc = ATC_UPPER[payeeType][nature];
+        lowerAtc = (vatType === 'vat') ? ATC_LOWER_VAT[nature] : ATC_LOWER_NONVAT;
+      }
+
+      const totalWithheldCents = upperCents + lowerCents;
+      const netPayableCents = grossCents - totalWithheldCents;
+
+      // Display results
+      const resultsHTML = `
+        <div class="row2"><span><strong>Gross Amount:</strong></span><span class="amount">${pesoFromCents(grossCents)}</span></div>
+        <div class="row2"><span><strong>Net of VAT:</strong> <span class="muted">(if VAT)</span></span><span id="netVat" class="amount">${(netVatCents != null) ? pesoFromCents(netVatCents) : '—'}</span></div>
+        <div class="row2"><span><strong>Upper (EWT):</strong> <span id="upperAtc" class="muted">ATC: ${upperAtc}</span></span><span id="upperAmt" class="amount">${pesoFromCents(upperCents)}</span></div>
+        <div class="row2"><span><strong>Lower (Business Tax):</strong> <span id="lowerAtc" class="muted">ATC: ${lowerAtc}</span></span><span id="lowerAmt" class="amount">${pesoFromCents(lowerCents)}</span></div>
+        <hr />
+        <div class="row2"><span><strong>Total Withheld</strong></span><span id="totalWithheld" class="amount">${pesoFromCents(totalWithheldCents)}</span></div>
+        <div class="row2"><span><strong>Net Payable</strong></span><span id="netPayable" class="amount">${pesoFromCents(netPayableCents)}</span></div>
+        <div class="row2" style="align-items: flex-start;"><span><strong>In Words:</strong></span><span id="netPayableWords" class="amount" style="font-size: 12px; text-align: right; line-height: 1.4;">${numberToWordsCheque(netPayableCents)}</span></div>
+        <p class="muted" style="margin-top: 10px;">ATC mapping: Upper – WI157/WI640 (Individual), WC157/WC640 (Corporation). Lower – WV020 (Services VAT), WV010 (Goods VAT), WB080 (Non‑VAT). Water District (EWT) = WC157 (2% of Gross). ASELCO = 5% of VATABLE (per SOA).</p>
+        <button id="btnShowReport" class="btn-secondary" style="margin-top: 12px;">Show Text Report</button>
+      `;
+      
+      document.getElementById('results').innerHTML = resultsHTML;
+      document.getElementById('results').style.display = 'block';
+
+      // Generate text report
+      const reportData = {
+        grossAmount: pesoFromCents(grossCents),
+        aselcoSOAValue: (special === 'aselco') ? pesoFromCents(aselcoSOACents) : '—',
+        netVat: (netVatCents != null) ? pesoFromCents(netVatCents) : '—',
+        upperAmt: pesoFromCents(upperCents),
+        upperAtc: upperAtc,
+        lowerAmt: pesoFromCents(lowerCents),
+        lowerAtc: lowerAtc,
+        totalWithheld: pesoFromCents(totalWithheldCents),
+        netPayable: pesoFromCents(netPayableCents),
+        netPayableWords: numberToWordsCheque(netPayableCents)
+      };
+
+      const textReport = generateTextReport(reportData, false);
+      document.getElementById('reportContent').textContent = textReport;
+      
+    } else {
+      // REVERSE CALCULATION (Net to Gross)
+      const netPayableValue = parseFloat(document.getElementById('netPayableInput').value.replace(/,/g, '')) || 0;
+      const netCents = toCents(netPayableValue);
+      
+      const special = getReverseVal('reverseSpecial');
+      const vatType = getReverseVal('reverseVatType');
+      const nature = getReverseVal('reverseNature');
+      const payeeType = getReverseVal('reversePayeeType');
+      const aselcoSOACents = toCents(parseFloat(document.getElementById('reverseAselcoVatable').value) || 0);
+
+      // Calculate gross from net
+      const result = calculateGrossFromNet(
+        netCents, 
+        special, 
+        vatType, 
+        nature, 
+        payeeType, 
+        aselcoSOACents
+      );
+
+      const {
+        grossCents,
+        netVatCents,
+        upperCents,
+        lowerCents,
+        upperAtc,
+        lowerAtc
+      } = result;
+
+      const totalWithheldCents = upperCents + lowerCents;
+      
+      // Verify calculation: gross - totalWithheld should equal input net
+      const calculatedNet = grossCents - totalWithheldCents;
+      const difference = Math.abs(calculatedNet - netCents);
+
+      // Display results with highlighted computed gross amount
+      const resultsHTML = `
+        <div class="row2"><span><strong>Input Net Payable:</strong></span><span class="amount">${pesoFromCents(netCents)}</span></div>
+        ${special === 'aselco' ? `<div class="row2"><span><strong>ASELCO VATABLE:</strong></span><span class="amount">${pesoFromCents(aselcoSOACents)}</span></div>` : ''}
+        <div class="highlight-row">
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <span><strong>Computed Gross Amount:</strong></span>
+            <span class="amount">${pesoFromCents(grossCents)}</span>
+          </div>
+        </div>
+        <div class="row2"><span><strong>Net of VAT:</strong> <span class="muted">(if VAT)</span></span><span id="netVat" class="amount">${(netVatCents != null) ? pesoFromCents(netVatCents) : '—'}</span></div>
+        <div class="row2"><span><strong>Upper (EWT):</strong> <span id="upperAtc" class="muted">ATC: ${upperAtc}</span></span><span id="upperAmt" class="amount">${pesoFromCents(upperCents)}</span></div>
+        <div class="row2"><span><strong>Lower (Business Tax):</strong> <span id="lowerAtc" class="muted">ATC: ${lowerAtc}</span></span><span id="lowerAmt" class="amount">${pesoFromCents(lowerCents)}</span></div>
+        <hr />
+        <div class="row2"><span><strong>Total Withheld</strong></span><span id="totalWithheld" class="amount">${pesoFromCents(totalWithheldCents)}</span></div>
+        <div class="row2"><span><strong>Verification:</strong></span><span class="amount" style="color: ${difference <= 1 ? 'green' : 'orange'}">Gross - Total Withheld = ${pesoFromCents(calculatedNet)} ${difference <= 1 ? '✓' : '⚠'}</span></div>
+        <p class="muted" style="margin-top: 10px;">Reverse calculation computes the Gross Amount needed to achieve the input Net Payable after withholding taxes.</p>
+        <button id="btnShowReport" class="btn-secondary" style="margin-top: 12px;">Show Text Report</button>
+      `;
+      
+      document.getElementById('results').innerHTML = resultsHTML;
+      document.getElementById('results').style.display = 'block';
+
+      // Generate text report
+      const reportData = {
+        netPayableInput: pesoFromCents(netCents),
+        aselcoSOAValue: (special === 'aselco') ? pesoFromCents(aselcoSOACents) : '—',
+        computedGross: pesoFromCents(grossCents),
+        netVat: (netVatCents != null) ? pesoFromCents(netVatCents) : '—',
+        upperAmt: pesoFromCents(upperCents),
+        upperAtc: upperAtc,
+        lowerAmt: pesoFromCents(lowerCents),
+        lowerAtc: lowerAtc,
+        totalWithheld: pesoFromCents(totalWithheldCents)
+      };
+
+      const textReport = generateTextReport(reportData, true);
+      document.getElementById('reportContent').textContent = textReport;
+    }
+    
+    // Reset report button text and hide report initially
+    document.getElementById('textReport').style.display = 'none';
+  });
+
+  // Initialize validation on page load
+  validateInputs();
+</script>
+</body>
+</html>
