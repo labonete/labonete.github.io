@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to Google Sheets Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .upload-area {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px dashed #28a745;
+            border-radius: 6px;
+            text-align: center;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        .search-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        select, input[type="text"], button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .table-container {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background-color: #f1f8ff;
+        }
+        .no-data {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        .status {
+            font-size: 14px;
+            margin: 8px 0;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Excel → Google Sheets Database</h1>
+
+        <!-- Upload Section -->
+        <div class="upload-area">
+            <h3>Upload Excel File (Saves to Google Sheets)</h3>
+            <input type="file" id="excelFile" accept=".xlsx, .xls, .csv">
+            <p>Supported formats: .xlsx, .xls, .csv</p>
+            <div id="statusMsg" class="status"></div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-area">
+            <select id="columnSelect">
+                <option value="">Select Column</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Enter search keyword...">
+            <button id="searchBtn">Search</button>
+            <button id="resetBtn">Reset</button>
+            <button id="clearDataBtn" class="btn-danger">Clear All Data</button>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-container">
+            <table id="dataTable">
+                <tbody id="tableBody">
+                    <tr><td class="no-data">Loading data from Google Sheets...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --------------------------
+        // 👉 REPLACE THESE 2 VALUES
+        // --------------------------
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypFl7oOvBAAWYkFTBY9TuUw1MAZslDuWLhpGLHuQ6VILK0hi-9KJDi6DBbXBmFUWQU/exec";
+        const SHEET_NAME = "Sheet1"; // exactly as in your sheet
+
+        let allData = [];
+        let headers = [];
+
+        // Load data from Google Sheets when app opens
+        window.addEventListener('load', function() {
+            loadDataFromSheet();
+        });
+
+        // Read Excel file and send to Google Sheets
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            showStatus("⏳ Reading file...", "success");
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                
+                if (jsonData.length < 1) {
+                    showStatus("❌ No data found in file", "error");
+                    return;
+                }
+
+                headers = jsonData[0];
+                allData = jsonData.slice(1).filter(row => row.some(cell => cell !== undefined && cell !== ''));
+
+                // Send data to Google Sheets
+                showStatus("⏳ Saving to Google Sheets...", "success");
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        action: "saveData",
+                        sheetName: SHEET_NAME,
+                        headers: headers,
+                        data: allData
+                    })
+                })
+                .then(() => {
+                    showStatus("✅ Data saved to Google Sheets!", "success");
+                    updateColumnDropdown();
+                    displayData(allData);
+                })
+                .catch(err => showStatus("❌ Error: " + err.message, "error"));
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Load data from Google Sheets
+        function loadDataFromSheet() {
+            fetch(GOOGLE_SCRIPT_URL + "?action=getData&sheetName=" + SHEET_NAME)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.headers && data.data) {
+                        headers = data.headers;
+                        allData = data.data;
+                        updateColumnDropdown();
+                        displayData(allData);
+                        showStatus("✅ Data loaded from Google Sheets", "success");
+                    } else {
+                        document.getElementById('tableBody').innerHTML = 
+                            '<tr><td class="no-data">No data found. Upload Excel file to start.</td></tr>';
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('tableBody').innerHTML = 
+                        '<tr><td class="no-data">❌ Failed to load data. Check your setup.</td></tr>';
+                });
+        }
+
+        // Update column dropdown
+        function updateColumnDropdown() {
+            const columnSelect = document.getElementById('columnSelect');
+            columnSelect.innerHTML = '<option value="">Select Column</option>';
+            headers.forEach((header, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = header || `Column ${index + 1}`;
+                columnSelect.appendChild(option);
+            });
+        }
+
+        // Display data in table
+        function displayData(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td class="no-data">No matching records found</td></tr>';
+                return;
+            }
+
+            // Header row
+            const headerRow = document.createElement('tr');
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header || '';
+                headerRow.appendChild(th);
+            });
+            tableBody.appendChild(headerRow);
+
+            // Data rows
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                headers.forEach((_, colIndex) => {
+                    const td = document.createElement('td');
+                    td.textContent = row[colIndex] !== undefined ? row[colIndex] : '';
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Search function
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const colIndex = document.getElementById('columnSelect').value;
+            const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+
+            if (colIndex === '' || keyword === '') {
+                displayData(allData);
+                return;
+            }
+
+            const filteredData = allData.filter(row => {
+                const cellValue = row[colIndex] ? row[colIndex].toString().toLowerCase() : '';
+                return cellValue.includes(keyword);
+            });
+
+            displayData(filteredData);
+        });
+
+        // Reset
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            document.getElementById('columnSelect').value = '';
+            document.getElementById('searchInput').value = '';
+            displayData(allData);
+        });
+
+        // Clear all data
+        document.getElementById('clearDataBtn').addEventListener('click', function() {
+            if (confirm('⚠️ Delete ALL data from Google Sheet? This cannot be undone!')) {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        action: "clearData",
+                        sheetName: SHEET_NAME
+                    })
+                })
+                .then(() => {
+                    allData = [];
+                    headers = [];
+                    document.getElementById('columnSelect').innerHTML = '<option value="">Select Column</option>';
+                    document.getElementById('tableBody').innerHTML = 
+                        '<tr><td class="no-data">Sheet cleared. Upload new file.</td></tr>';
+                    showStatus("✅ Sheet cleared", "success");
+                })
+                .catch(err => showStatus("❌ Error: " + err.message, "error"));
+            }
+        });
+
+        // Helper: Show status
+        function showStatus(text, type) {
+            const el = document.getElementById('statusMsg');
+            el.textContent = text;
+            el.className = 'status ' + type;
+        }
+    </script>
+</body>
+</html>
