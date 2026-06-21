@@ -145,6 +145,55 @@
         let allData = [];
         let headers = [];
 
+        // --------------------------
+        // FORMATTING FUNCTIONS
+        // --------------------------
+        // Format date to: January 01, 2005
+        function formatDate(dateValue) {
+            if (!dateValue) return "";
+            let date;
+            // Handle Excel date number
+            if (typeof dateValue === "number") {
+                date = new Date((dateValue - 25569) * 86400 * 1000);
+            } else {
+                date = new Date(dateValue);
+            }
+            if (isNaN(date.getTime())) return dateValue; // return original if invalid
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const monthName = months[date.getMonth()];
+            const day = String(date.getDate()).padStart(2, "0");
+            const year = date.getFullYear();
+            return `${monthName} ${day}, ${year}`;
+        }
+
+        // Format number/amount to: 1,000.00
+        function formatNumber(numValue) {
+            if (numValue === "" || numValue === null || numValue === undefined) return "";
+            let num = Number(numValue);
+            if (isNaN(num)) return numValue; // return original if not a number
+            return num.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        // Auto-detect and format cell value
+        function formatCell(value) {
+            if (!value && value !== 0) return "";
+            // Check if it's a date (Excel number or date string)
+            if (typeof value === "number" && value > 25569) { // Excel dates start from 1900
+                return formatDate(value);
+            }
+            if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+                return formatDate(value);
+            }
+            // Check if it's a number
+            if (!isNaN(Number(value)) && typeof value !== "boolean") {
+                return formatNumber(value);
+            }
+            return value;
+        }
+
         // Load data from Google Sheets when app opens
         window.addEventListener('load', function() {
             loadDataFromSheet();
@@ -172,7 +221,10 @@
                 }
 
                 headers = jsonData[0];
-                allData = jsonData.slice(1).filter(row => row.some(cell => cell !== undefined && cell !== ''));
+                // Format every cell before saving
+                allData = jsonData.slice(1)
+                    .filter(row => row.some(cell => cell !== undefined && cell !== ''))
+                    .map(row => row.map(formatCell));
 
                 // Send data to Google Sheets
                 showStatus("⏳ Saving to Google Sheets...", "success");
@@ -204,7 +256,8 @@
                 .then(data => {
                     if (data && data.headers && data.data) {
                         headers = data.headers;
-                        allData = data.data;
+                        // Re-format when loading from sheet
+                        allData = data.data.map(row => row.map(formatCell));
                         updateColumnDropdown();
                         displayData(allData);
                         showStatus("✅ Data loaded from Google Sheets", "success");
