@@ -84,6 +84,23 @@
             background-repeat: no-repeat;
             padding-right: 34px;
         }
+        .btn-favorite { background-color: #6f42c1; }
+        .btn-favorite.active { background-color: #e83e8c; }
+        .like-btn {
+            background-color: #ffffff;
+            color: #6f42c1;
+            border: 1px solid #c7b6ea;
+            min-height: 38px;
+            padding: 7px 10px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .like-btn.liked {
+            background-color: #ffe9f3;
+            color: #c2185b;
+            border-color: #f3a7c7;
+            font-weight: 700;
+        }
         .app-install-hint {
             display: none;
             margin-top: 8px;
@@ -114,8 +131,6 @@
                 -webkit-overflow-scrolling: touch;
             }
         }
-
-        /* Desktop/tablet: proportional columns */
         .table-container {
             width: 100%;
             overflow-x: hidden;
@@ -131,11 +146,12 @@
             word-break: normal;
             vertical-align: top;
         }
-        th:nth-child(1), td:nth-child(1) { width: 24%; }
-        th:nth-child(2), td:nth-child(2) { width: 18%; }
-        th:nth-child(3), td:nth-child(3) { width: 24%; }
-        th:nth-child(4), td:nth-child(4) { width: 24%; }
-        th:nth-child(5), td:nth-child(5) { width: 10%; }
+        th:nth-child(1), td:nth-child(1) { width: 21%; }
+        th:nth-child(2), td:nth-child(2) { width: 15%; }
+        th:nth-child(3), td:nth-child(3) { width: 21%; }
+        th:nth-child(4), td:nth-child(4) { width: 22%; }
+        th:nth-child(5), td:nth-child(5) { width: 8%; }
+        th:nth-child(6), td:nth-child(6) { width: 13%; }
 
         /* iPhone/mobile: full-width readable result cards */
         @media (max-width: 700px) {
@@ -203,6 +219,7 @@
                 text-align: center !important;
             }
             #dataTable td.no-data::before { content: none !important; }
+            .like-btn { width: 100%; margin-top: 2px; }
             body.dark-mode #dataTable tr {
                 background-color: #1e1e1e;
                 border-color: #444;
@@ -212,6 +229,8 @@
             body.dark-mode #dataTable td::before { color: #bbb; }
             body.dark-mode .app-install-hint { color: #bbb; }
         }
+        body.dark-mode .like-btn { background-color: #2b2b2b; color: #d5c5ff; border-color: #5d4a83; }
+        body.dark-mode .like-btn.liked { background-color: #3a1f2d; color: #ffb3ce; border-color: #a84f76; }
 
         @media (max-width: 700px) {
             body { padding: 10px; }
@@ -251,6 +270,7 @@
         </select>
         <input type="text" id="searchInput" placeholder="Search displayed birthday celebrants...">
         <button id="birthdayBtn" class="btn-warning">🎂 Show Birthday Celebrants</button>
+        <button id="favoritesBtn" class="btn-favorite">⭐ Favorites/Friends (0)</button>
         <button id="resetBtn">Reset</button>
         <button id="refreshBtn" class="btn-success">🔄 Refresh Data</button>
         <button id="themeToggleBtn" class="btn-dark">🌙 Dark Mode</button>
@@ -273,6 +293,8 @@
     let headers = [];
     let allRawData = [];
     let currentBirthdayData = [];
+    let showFavoritesOnly = false;
+    const FAVORITES_STORAGE_KEY = "birthdayFavoritesV1";
 
     const themeToggleBtn = document.getElementById("themeToggleBtn");
 
@@ -307,7 +329,8 @@
             mid_name: "Middle Name",
             last_name: "Last Name",
             date_birth: "Birth Date",
-            age_today: "Age"
+            age_today: "Age",
+            favorite: "Favorite/Friend"
         };
         return labels[columnName] || columnName;
     }
@@ -317,6 +340,46 @@
         if (!monthSelect) return;
         const currentDeviceMonth = new Date().getMonth() + 1;
         monthSelect.value = String(currentDeviceMonth);
+    }
+
+    function getFavoriteKeys() {
+        try {
+            return JSON.parse(localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]");
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function saveFavoriteKeys(keys) {
+        localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(keys));
+    }
+
+    function getEmployeeFavoriteKey(row) {
+        return row.slice(0, 4).map(value => (value !== undefined && value !== null ? value.toString().trim().toLowerCase() : "")).join("|");
+    }
+
+    function isFavoriteRow(row) {
+        return getFavoriteKeys().includes(getEmployeeFavoriteKey(row));
+    }
+
+    function toggleFavoriteRow(row) {
+        const key = getEmployeeFavoriteKey(row);
+        let keys = getFavoriteKeys();
+        if (keys.includes(key)) {
+            keys = keys.filter(item => item !== key);
+        } else {
+            keys.push(key);
+        }
+        saveFavoriteKeys(keys);
+        updateFavoritesButton();
+    }
+
+    function updateFavoritesButton() {
+        const btn = document.getElementById("favoritesBtn");
+        if (!btn) return;
+        const count = getFavoriteKeys().length;
+        btn.textContent = showFavoritesOnly ? `⭐ Showing Favorites/Friends (${count})` : `⭐ Favorites/Friends (${count})`;
+        btn.classList.toggle("active", showFavoritesOnly);
     }
 
     function normalizeHeader(header) {
@@ -436,41 +499,56 @@
     function displayBirthdayTable(data, message) {
         const tableBody = document.getElementById("tableBody");
         tableBody.innerHTML = "";
-
+        const displayColumns = [...birthdayColumns, "favorite"];
         const headerRow = document.createElement("tr");
-        birthdayColumns.forEach(header => {
+        displayColumns.forEach(header => {
             const th = document.createElement("th");
-            th.textContent = header;
+            th.textContent = getDisplayColumnLabel(header);
             headerRow.appendChild(th);
         });
         tableBody.appendChild(headerRow);
-
         if (!data || data.length === 0) {
             const tr = document.createElement("tr");
             const td = document.createElement("td");
             td.className = "no-data";
             td.setAttribute("data-label", "");
-            td.colSpan = birthdayColumns.length;
+            td.colSpan = displayColumns.length;
             td.textContent = message || "No birthday celebrants found.";
             tr.appendChild(td);
             tableBody.appendChild(tr);
+            updateFavoritesButton();
             return;
         }
-
         data.forEach(row => {
             const tr = document.createElement("tr");
-            row.forEach((cell, index) => {
+            birthdayColumns.forEach((columnName, index) => {
                 const td = document.createElement("td");
-                td.setAttribute("data-label", getDisplayColumnLabel(birthdayColumns[index]));
+                td.setAttribute("data-label", getDisplayColumnLabel(columnName));
+                const cell = row[index];
                 td.textContent = cell !== undefined && cell !== null ? cell : "";
-                if (birthdayColumns[index] === "age_today") td.className = "number-col";
-                if (birthdayColumns[index] === "date_birth") td.className = "date-col";
+                if (columnName === "age_today") td.className = "number-col";
+                if (columnName === "date_birth") td.className = "date-col";
                 tr.appendChild(td);
             });
+
+            const favoriteTd = document.createElement("td");
+            favoriteTd.setAttribute("data-label", getDisplayColumnLabel("favorite"));
+            const likeButton = document.createElement("button");
+            const liked = isFavoriteRow(row);
+            likeButton.type = "button";
+            likeButton.className = "like-btn" + (liked ? " liked" : "");
+            likeButton.textContent = liked ? "⭐ Friend" : "🤍 Like";
+            likeButton.setAttribute("aria-label", liked ? "Remove from Favorites/Friends" : "Add to Favorites/Friends");
+            likeButton.addEventListener("click", function () {
+                toggleFavoriteRow(row);
+                showBirthdayCelebrants();
+            });
+            favoriteTd.appendChild(likeButton);
+            tr.appendChild(favoriteTd);
             tableBody.appendChild(tr);
         });
+        updateFavoritesButton();
     }
-
     function showBirthdayCelebrants() {
         const selectedMonth = document.getElementById("birthdayMonthSelect").value;
         const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
@@ -504,7 +582,9 @@
             : `No birthday celebrants found for ${monthName}.`;
 
         displayBirthdayTable(displayedRows, message);
-        showStatus(`🎂 Showing ${displayedRows.length} birthday celebrant(s) for ${monthName}, sorted by celebration Month and Day.`, "success");
+        const statusPrefix = showFavoritesOnly ? "⭐ Showing Favorites/Friends" : "🎂 Showing birthday celebrants";
+        showStatus(`${statusPrefix}: ${displayedRows.length} employee(s) for ${monthName}, sorted by celebration Month and Day.`, "success");
+        updateFavoritesButton();
     }
 
     function loadDataFromSheet() {
@@ -537,13 +617,21 @@
 
     window.addEventListener("load", function () {
         setDefaultBirthMonthToDeviceMonth();
+        updateFavoritesButton();
         loadDataFromSheet();
     });
     document.getElementById("refreshBtn").addEventListener("click", function () {
         showStatus("🔄 Refreshing latest data from Google Sheets...", "success");
         loadDataFromSheet();
     });
-    document.getElementById("birthdayBtn").addEventListener("click", showBirthdayCelebrants);
+    document.getElementById("birthdayBtn").addEventListener("click", function () {
+        showFavoritesOnly = false;
+        showBirthdayCelebrants();
+    });
+    document.getElementById("favoritesBtn").addEventListener("click", function () {
+        showFavoritesOnly = !showFavoritesOnly;
+        showBirthdayCelebrants();
+    });
     document.getElementById("birthdayMonthSelect").addEventListener("change", showBirthdayCelebrants);
     document.getElementById("searchInput").addEventListener("input", showBirthdayCelebrants);
     document.getElementById("searchInput").addEventListener("keydown", function (e) {
