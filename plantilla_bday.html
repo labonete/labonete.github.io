@@ -51,67 +51,35 @@
         body.dark-mode .btn-dark { background-color: #f8f9fa; color: #222; }
         body.dark-mode .hint { color: #bbb; }
 
-        html {
-            width: 100%;
-            min-height: 100%;
-            min-height: -webkit-fill-available;
-            background-color: #f5f5f5;
-        }
+        html { width: 100%; min-height: 100%; min-height: -webkit-fill-available; background-color: #f5f5f5; }
         body {
-            width: 100%;
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-            overscroll-behavior-y: none;
-            -webkit-text-size-adjust: 100%;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            width: 100%; min-height: 100vh; min-height: -webkit-fill-available;
+            overscroll-behavior-y: none; -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent; touch-action: manipulation;
             padding-top: max(20px, env(safe-area-inset-top));
             padding-right: max(20px, env(safe-area-inset-right));
             padding-bottom: max(20px, env(safe-area-inset-bottom));
             padding-left: max(20px, env(safe-area-inset-left));
         }
-        button, select, input[type="text"] {
-            min-height: 44px;
-            font-size: 16px;
-            -webkit-appearance: none;
-            appearance: none;
-        }
+        button, select, input[type="text"] { min-height: 44px; font-size: 16px; -webkit-appearance: none; appearance: none; }
         button { border-radius: 10px; }
         select {
             background-image: linear-gradient(45deg, transparent 50%, #555 50%), linear-gradient(135deg, #555 50%, transparent 50%);
             background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
-            background-size: 6px 6px, 6px 6px;
-            background-repeat: no-repeat;
-            padding-right: 34px;
+            background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; padding-right: 34px;
         }
         .btn-favorite { background-color: #6f42c1; }
         .btn-favorite.active { background-color: #e83e8c; }
+        .btn-backup { background-color: #17a2b8; }
+        .btn-restore { background-color: #795548; }
         .like-btn {
-            background-color: #fff;
-            color: #6f42c1;
-            border: 1px solid #c7b6ea;
-            min-height: 38px;
-            padding: 7px 10px;
-            font-size: 14px;
-            white-space: nowrap;
+            background-color: #fff; color: #6f42c1; border: 1px solid #c7b6ea;
+            min-height: 38px; padding: 7px 10px; font-size: 14px; white-space: nowrap;
         }
-        .like-btn.liked {
-            background-color: #ffe9f3;
-            color: #c2185b;
-            border-color: #f3a7c7;
-            font-weight: 700;
-        }
-        .app-install-hint {
-            display: none;
-            margin-top: 8px;
-            font-size: 13px;
-            color: #555;
-        }
+        .like-btn.liked { background-color: #ffe9f3; color: #c2185b; border-color: #f3a7c7; font-weight: 700; }
+        .app-install-hint { display: none; margin-top: 8px; font-size: 13px; color: #555; }
         body.ios-browser .app-install-hint { display: block; }
-        @media screen and (display-mode: standalone) {
-            body { padding-top: max(16px, env(safe-area-inset-top)); }
-            .app-install-hint { display: none !important; }
-        }
+        @media screen and (display-mode: standalone) { body { padding-top: max(16px, env(safe-area-inset-top)); } .app-install-hint { display: none !important; } }
         @supports (-webkit-touch-callout: none) {
             body.standalone-ios { position: fixed; inset: 0; overflow: hidden; }
             body.standalone-ios .container { height: 100%; max-height: 100%; overflow: hidden; display: flex; flex-direction: column; }
@@ -126,7 +94,6 @@
         th:nth-child(4), td:nth-child(4) { width: 22%; }
         th:nth-child(5), td:nth-child(5) { width: 8%; }
         th:nth-child(6), td:nth-child(6) { width: 13%; }
-
         @media (max-width: 700px) {
             body { padding: max(14px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
             .container { max-width: 430px; border-radius: 18px; padding: 14px; }
@@ -191,6 +158,9 @@
         <input type="text" id="searchInput" placeholder="Search displayed birthday celebrants...">
         <button id="birthdayBtn" class="btn-warning">🎂 Show Birthday Celebrants</button>
         <button id="favoritesBtn" class="btn-favorite">⭐ Favorites/Friends (0)</button>
+        <button id="backupFavoritesBtn" class="btn-backup">💾 Backup Favorites</button>
+        <button id="restoreFavoritesBtn" class="btn-restore">📂 Restore Favorites</button>
+        <input type="file" id="restoreFavoritesInput" accept="application/json,.json" style="display:none;">
         <button id="resetBtn">Reset</button>
         <button id="refreshBtn" class="btn-success">🔄 Refresh Data</button>
         <button id="themeToggleBtn" class="btn-dark">🌙 Dark Mode</button>
@@ -244,14 +214,7 @@
 
 
     function getDisplayColumnLabel(columnName) {
-        const labels = {
-            first_name: "First Name",
-            mid_name: "Middle Name",
-            last_name: "Last Name",
-            date_birth: "Birth Date",
-            age_today: "Age",
-            favorite: "Favorite/Friend"
-        };
+        const labels = { first_name: "First Name", mid_name: "Middle Name", last_name: "Last Name", date_birth: "Birth Date", age_today: "Age", favorite: "Favorite/Friend" };
         return labels[columnName] || columnName;
     }
 
@@ -265,23 +228,16 @@
         try {
             const keys = JSON.parse(localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]");
             return Array.isArray(keys) ? keys : [];
-        } catch (error) {
-            return [];
-        }
+        } catch (error) { return []; }
     }
 
-    function saveFavoriteKeys(keys) {
-        localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify([...new Set(keys)]));
-    }
+    function saveFavoriteKeys(keys) { localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify([...new Set(keys)])); }
 
     function getEmployeeFavoriteKey(row) {
-        // Stable key based on name + birth date. Age is excluded because age changes.
         return row.slice(0, 4).map(value => (value !== undefined && value !== null ? value.toString().trim().toLowerCase() : "")).join("|");
     }
 
-    function isFavoriteRow(row) {
-        return getFavoriteKeys().includes(getEmployeeFavoriteKey(row));
-    }
+    function isFavoriteRow(row) { return getFavoriteKeys().includes(getEmployeeFavoriteKey(row)); }
 
     function toggleFavoriteRow(row) {
         const key = getEmployeeFavoriteKey(row);
@@ -302,8 +258,55 @@
     function getFavoriteRowsFromAllMonths() {
         const result = buildBirthdayRows("");
         if (result.error) return { error: result.error, rows: [] };
-        const favoriteRows = result.rows.filter(row => isFavoriteRow(row));
-        return { rows: favoriteRows };
+        return { rows: result.rows.filter(row => isFavoriteRow(row)) };
+    }
+
+    function backupFavorites() {
+        const keys = getFavoriteKeys();
+        const backupData = {
+            app: "Birthday Celebrants Favorites",
+            version: 2,
+            exportedAt: new Date().toISOString(),
+            storageKey: FAVORITES_STORAGE_KEY,
+            count: keys.length,
+            favorites: keys
+        };
+        const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const datePart = new Date().toISOString().slice(0, 10);
+        link.href = url;
+        link.download = `birthday-favorites-backup-${datePart}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showStatus(`💾 Backup created with ${keys.length} favorite(s). Save the JSON file somewhere safe.`, "success");
+    }
+
+    function restoreFavoritesFromFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            try {
+                const parsed = JSON.parse(event.target.result);
+                const restoredKeys = Array.isArray(parsed) ? parsed : parsed.favorites;
+                if (!Array.isArray(restoredKeys)) throw new Error("Backup file does not contain a valid favorites list.");
+                const cleanedKeys = restoredKeys.filter(item => typeof item === "string" && item.trim() !== "");
+                saveFavoriteKeys(cleanedKeys);
+                showFavoritesOnly = true;
+                updateFavoritesButton();
+                showBirthdayCelebrants();
+                showStatus(`📂 Restored ${cleanedKeys.length} favorite(s) from backup.`, "success");
+            } catch (error) {
+                showStatus("❌ Restore failed: " + error.message, "error");
+            } finally {
+                const input = document.getElementById("restoreFavoritesInput");
+                if (input) input.value = "";
+            }
+        };
+        reader.onerror = function () { showStatus("❌ Restore failed: Could not read the selected file.", "error"); };
+        reader.readAsText(file);
     }
 
     function normalizeHeader(header) {
@@ -462,10 +465,7 @@
             likeButton.className = "like-btn" + (liked ? " liked" : "");
             likeButton.textContent = liked ? "⭐ Friend" : "🤍 Like";
             likeButton.setAttribute("aria-label", liked ? "Remove from Favorites/Friends" : "Add to Favorites/Friends");
-            likeButton.addEventListener("click", function () {
-                toggleFavoriteRow(row);
-                showBirthdayCelebrants();
-            });
+            likeButton.addEventListener("click", function () { toggleFavoriteRow(row); showBirthdayCelebrants(); });
             favoriteTd.appendChild(likeButton);
             tr.appendChild(favoriteTd);
             tableBody.appendChild(tr);
@@ -480,44 +480,23 @@
             showStatus("⚠️ No data available from Google Sheets.", "warning");
             return;
         }
-
         let displayedRows = [];
-        let monthName = selectedMonth
-            ? document.querySelector(`#birthdayMonthSelect option[value="${selectedMonth}"]`).textContent
-            : "all months";
-
+        let monthName = selectedMonth ? document.querySelector(`#birthdayMonthSelect option[value="${selectedMonth}"]`).textContent : "all months";
         if (showFavoritesOnly) {
-            // IMPORTANT FIX: Favorites are gathered from ALL MONTHS, not only the currently selected month.
             const favoritesResult = getFavoriteRowsFromAllMonths();
-            if (favoritesResult.error) {
-                displayBirthdayTable([], favoritesResult.error);
-                showStatus("❌ " + favoritesResult.error, "error");
-                return;
-            }
+            if (favoritesResult.error) { displayBirthdayTable([], favoritesResult.error); showStatus("❌ " + favoritesResult.error, "error"); return; }
             displayedRows = favoritesResult.rows;
             monthName = "all months";
         } else {
             const result = buildBirthdayRows(selectedMonth);
-            if (result.error) {
-                displayBirthdayTable([], result.error);
-                showStatus("❌ " + result.error, "error");
-                return;
-            }
+            if (result.error) { displayBirthdayTable([], result.error); showStatus("❌ " + result.error, "error"); return; }
             currentBirthdayData = result.rows;
             displayedRows = currentBirthdayData;
         }
-
         if (keyword) {
-            displayedRows = displayedRows.filter(row =>
-                row.some(cell => (cell !== undefined && cell !== null ? cell.toString().toLowerCase() : "").includes(keyword))
-            );
+            displayedRows = displayedRows.filter(row => row.some(cell => (cell !== undefined && cell !== null ? cell.toString().toLowerCase() : "").includes(keyword)));
         }
-
-        const message = showFavoritesOnly
-            ? "No Favorites/Friends found yet. Tap 🤍 Like beside an employee to add one."
-            : (keyword
-                ? `No matching birthday celebrants found for ${monthName}.`
-                : `No birthday celebrants found for ${monthName}.`);
+        const message = showFavoritesOnly ? "No Favorites/Friends found yet. Tap 🤍 Like beside an employee to add one, or restore a backup file." : (keyword ? `No matching birthday celebrants found for ${monthName}.` : `No birthday celebrants found for ${monthName}.`);
         displayBirthdayTable(displayedRows, message);
         const statusPrefix = showFavoritesOnly ? "⭐ Showing Favorites/Friends" : "🎂 Showing birthday celebrants";
         showStatus(`${statusPrefix}: ${displayedRows.length} employee(s) for ${monthName}, sorted by celebration Month and Day.`, "success");
@@ -567,6 +546,13 @@
     document.getElementById("favoritesBtn").addEventListener("click", function () {
         showFavoritesOnly = !showFavoritesOnly;
         showBirthdayCelebrants();
+    });
+    document.getElementById("backupFavoritesBtn").addEventListener("click", backupFavorites);
+    document.getElementById("restoreFavoritesBtn").addEventListener("click", function () {
+        document.getElementById("restoreFavoritesInput").click();
+    });
+    document.getElementById("restoreFavoritesInput").addEventListener("change", function (event) {
+        restoreFavoritesFromFile(event.target.files[0]);
     });
     document.getElementById("birthdayMonthSelect").addEventListener("change", showBirthdayCelebrants);
     document.getElementById("searchInput").addEventListener("input", showBirthdayCelebrants);
