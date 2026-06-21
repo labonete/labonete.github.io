@@ -60,6 +60,12 @@
         button:hover {
             background-color: #0056b3;
         }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
         .btn-danger {
             background-color: #dc3545;
         }
@@ -103,6 +109,7 @@
         }
         .success { color: #28a745; }
         .error { color: #dc3545; }
+        .warning { color: #ffc107; }
     </style>
 </head>
 <body>
@@ -125,6 +132,7 @@
             <input type="text" id="searchInput" placeholder="Enter search keyword...">
             <button id="searchBtn">Search</button>
             <button id="resetBtn">Reset</button>
+            <button id="refreshBtn" class="btn-success">🔄 Refresh Data</button>
             <button id="clearDataBtn" class="btn-danger">Clear All Data</button>
         </div>
 
@@ -140,7 +148,7 @@
 
     <script>
         // --------------------------
-        // 👉 REPLACE THIS ONLY
+        // 👉 REPLACE THIS WITH YOUR /exec URL
         // --------------------------
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKLa-KiuAylvci4DFdlBm658FeTicaZQPG434kKrcoYWocrBuD8QA3whdety5U-NRQ/exec";
         const SHEET_NAME = "Sheet1";
@@ -228,7 +236,15 @@
         // ✅ APP STARTS BY LOADING FROM GOOGLE SHEETS ONLY
         // ==================================================
         window.addEventListener('load', function() {
-            loadDataFromSheet(); // FIRST: load from online sheet
+            loadDataFromSheet();
+        });
+
+        // ==================================================
+        // 🔄 REFRESH BUTTON FUNCTION
+        // ==================================================
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            showStatus("🔄 Refreshing latest data from Google Sheets...", "success");
+            loadDataFromSheet();
         });
 
         // ==================================================
@@ -273,9 +289,8 @@
                     })
                 })
                 .then(() => {
-                    showStatus("✅ Google Sheets UPDATED! Data loaded from sheet.", "success");
-                    updateColumnDropdown();
-                    displayData(allData);
+                    showStatus("✅ Google Sheets UPDATED! Refreshing data...", "success");
+                    loadDataFromSheet(); // auto-refresh after upload
                 })
                 .catch(err => showStatus("❌ Error: " + err.message, "error"));
             };
@@ -296,15 +311,17 @@
                         allData = rawData.map(row => row.map((cell, i) => formatCell(cell, columnTypes[i])));
                         updateColumnDropdown();
                         displayData(allData);
-                        showStatus("✅ Data loaded FROM GOOGLE SHEETS", "success");
+                        showStatus("✅ Latest data loaded FROM GOOGLE SHEETS", "success");
                     } else {
                         document.getElementById('tableBody').innerHTML = 
                             '<tr><td class="no-data">⚠️ Google Sheet is empty. Upload Excel file to add data.</td></tr>';
+                        showStatus("⚠️ Google Sheet is empty", "warning");
                     }
                 })
                 .catch(err => {
                     document.getElementById('tableBody').innerHTML = 
                         '<tr><td class="no-data">❌ Failed to load from Google Sheets. Check your connection/URL.</td></tr>';
+                    showStatus("❌ Error loading data", "error");
                 });
         }
 
