@@ -139,8 +139,14 @@
         // --------------------------
         // 👉 REPLACE THESE 2 VALUES
         // --------------------------
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypFl7oOvBAAWYkFTBY9TuUw1MAZslDuWLhpGLHuQ6VILK0hi-9KJDi6DBbXBmFUWQU/exec";
-        const SHEET_NAME = "Sheet1"; // exactly as in your sheet
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxFXMiwDoZT1DjAneakTs9MvIY0i2_KQnxAREG0boC4jusYQCb-gW--i2LVT6VGdiQ/exec";
+        const SHEET_NAME = "Sheet1";
+
+        // --------------------------
+        // 👉 DEFINE YOUR COLUMNS
+        // --------------------------
+        const AMOUNT_COLUMNS = ["sal_grd", "au_sal", "f_amt", "step_inc"]; // force as number
+        const DATE_COLUMNS = ["date_birth", "date_appoint", "date", "date_separated"]; // force as date
 
         let allData = [];
         let headers = [];
@@ -152,54 +158,55 @@
         function formatDate(dateValue) {
             if (!dateValue) return "";
             let date;
-            // Handle Excel date number
             if (typeof dateValue === "number") {
                 date = new Date((dateValue - 25569) * 86400 * 1000);
             } else {
                 date = new Date(dateValue);
             }
-            if (isNaN(date.getTime())) return dateValue; // return original if invalid
+            if (isNaN(date.getTime())) return dateValue;
             const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            const monthName = months[date.getMonth()];
-            const day = String(date.getDate()).padStart(2, "0");
-            const year = date.getFullYear();
-            return `${monthName} ${day}, ${year}`;
+            return `${months[date.getMonth()]} ${String(date.getDate()).padStart(2, "0")}, ${date.getFullYear()}`;
         }
 
         // Format number/amount to: 1,000.00
         function formatNumber(numValue) {
             if (numValue === "" || numValue === null || numValue === undefined) return "";
             let num = Number(numValue);
-            if (isNaN(num)) return numValue; // return original if not a number
-            return num.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
+            if (isNaN(num)) return numValue;
+            return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        // Auto-detect and format cell value
-        function formatCell(value) {
+        // Auto-format based on COLUMN NAME
+        function formatCell(value, columnName) {
             if (!value && value !== 0) return "";
-            // Check if it's a date (Excel number or date string)
-            if (typeof value === "number" && value > 25569) { // Excel dates start from 1900
+
+            // FORCE AMOUNT COLUMNS TO NUMBER
+            if (AMOUNT_COLUMNS.includes(columnName?.toLowerCase())) {
+                return formatNumber(value);
+            }
+
+            // FORCE DATE COLUMNS TO DATE
+            if (DATE_COLUMNS.includes(columnName?.toLowerCase())) {
                 return formatDate(value);
             }
-            if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+
+            // Auto-detect for other columns
+            if (typeof value === "number" && value > 25569) {
                 return formatDate(value);
             }
-            // Check if it's a number
             if (!isNaN(Number(value)) && typeof value !== "boolean") {
                 return formatNumber(value);
             }
+
             return value;
         }
 
-        // Load data from Google Sheets when app opens
+        // Load data from Google Sheets
         window.addEventListener('load', function() {
             loadDataFromSheet();
         });
 
-        // Read Excel file and send to Google Sheets
+        // Read Excel and send to Google Sheets
         document.getElementById('excelFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -221,12 +228,12 @@
                 }
 
                 headers = jsonData[0];
-                // Format every cell before saving
+                // Format using COLUMN NAME
                 allData = jsonData.slice(1)
                     .filter(row => row.some(cell => cell !== undefined && cell !== ''))
-                    .map(row => row.map(formatCell));
+                    .map(row => row.map((cell, i) => formatCell(cell, headers[i])));
 
-                // Send data to Google Sheets
+                // Save to Google Sheets
                 showStatus("⏳ Saving to Google Sheets...", "success");
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: "POST",
@@ -249,30 +256,28 @@
             reader.readAsArrayBuffer(file);
         });
 
-        // Load data from Google Sheets
+        // Load from Google Sheets
         function loadDataFromSheet() {
             fetch(GOOGLE_SCRIPT_URL + "?action=getData&sheetName=" + SHEET_NAME)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.headers && data.data) {
                         headers = data.headers;
-                        // Re-format when loading from sheet
-                        allData = data.data.map(row => row.map(formatCell));
+                        // Re-format with column names
+                        allData = data.data.map(row => row.map((cell, i) => formatCell(cell, headers[i])));
                         updateColumnDropdown();
                         displayData(allData);
                         showStatus("✅ Data loaded from Google Sheets", "success");
                     } else {
-                        document.getElementById('tableBody').innerHTML = 
-                            '<tr><td class="no-data">No data found. Upload Excel file to start.</td></tr>';
+                        document.getElementById('tableBody').innerHTML = '<tr><td class="no-data">No data found. Upload Excel file to start.</td></tr>';
                     }
                 })
                 .catch(err => {
-                    document.getElementById('tableBody').innerHTML = 
-                        '<tr><td class="no-data">❌ Failed to load data. Check your setup.</td></tr>';
+                    document.getElementById('tableBody').innerHTML = '<tr><td class="no-data">❌ Failed to load data. Check your setup.</td></tr>';
                 });
         }
 
-        // Update column dropdown
+        // Update dropdown
         function updateColumnDropdown() {
             const columnSelect = document.getElementById('columnSelect');
             columnSelect.innerHTML = '<option value="">Select Column</option>';
@@ -284,7 +289,7 @@
             });
         }
 
-        // Display data in table
+        // Display table
         function displayData(data) {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
@@ -294,7 +299,6 @@
                 return;
             }
 
-            // Header row
             const headerRow = document.createElement('tr');
             headers.forEach(header => {
                 const th = document.createElement('th');
@@ -303,7 +307,6 @@
             });
             tableBody.appendChild(headerRow);
 
-            // Data rows
             data.forEach(row => {
                 const tr = document.createElement('tr');
                 headers.forEach((_, colIndex) => {
@@ -315,7 +318,7 @@
             });
         }
 
-        // Search function
+        // Search
         document.getElementById('searchBtn').addEventListener('click', function() {
             const colIndex = document.getElementById('columnSelect').value;
             const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -340,31 +343,26 @@
             displayData(allData);
         });
 
-        // Clear all data
+        // Clear data
         document.getElementById('clearDataBtn').addEventListener('click', function() {
             if (confirm('⚠️ Delete ALL data from Google Sheet? This cannot be undone!')) {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: "POST",
                     mode: "no-cors",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        action: "clearData",
-                        sheetName: SHEET_NAME
-                    })
+                    body: JSON.stringify({ action: "clearData", sheetName: SHEET_NAME })
                 })
                 .then(() => {
                     allData = [];
                     headers = [];
                     document.getElementById('columnSelect').innerHTML = '<option value="">Select Column</option>';
-                    document.getElementById('tableBody').innerHTML = 
-                        '<tr><td class="no-data">Sheet cleared. Upload new file.</td></tr>';
+                    document.getElementById('tableBody').innerHTML = '<tr><td class="no-data">Sheet cleared. Upload new file.</td></tr>';
                     showStatus("✅ Sheet cleared", "success");
                 })
                 .catch(err => showStatus("❌ Error: " + err.message, "error"));
             }
         });
 
-        // Helper: Show status
         function showStatus(text, type) {
             const el = document.getElementById('statusMsg');
             el.textContent = text;
