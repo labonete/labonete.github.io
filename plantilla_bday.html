@@ -19,7 +19,7 @@
         .btn-warning { background-color: #ff9800; color: #222; }
         .table-container { overflow-x: auto; max-height: 650px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; white-space: nowrap; }
         th { background-color: #007bff; color: #fff; position: sticky; top: 0; z-index: 2; }
         td.number-col { text-align: right; }
         td.date-col { text-align: left; }
@@ -44,100 +44,106 @@
         body.dark-mode .no-data { color: #ccc; }
         body.dark-mode .btn-dark { background-color: #f8f9fa; color: #222; }
         body.dark-mode .hint { color: #bbb; }
-        
-        /* Responsive table columns: fit the device width instead of forcing horizontal scrolling */
-        .table-container {
-            width: 100%;
-            overflow-x: hidden;
-            -webkit-overflow-scrolling: touch;
-        }
-        table {
-            width: 100%;
-            table-layout: fixed;
-        }
-        th, td {
-            white-space: normal;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-            vertical-align: top;
-        }
-        th:nth-child(1), td:nth-child(1) { width: 24%; }
-        th:nth-child(2), td:nth-child(2) { width: 18%; }
-        th:nth-child(3), td:nth-child(3) { width: 24%; }
-        th:nth-child(4), td:nth-child(4) { width: 24%; }
-        th:nth-child(5), td:nth-child(5) { width: 10%; }
-
-        @media (max-width: 430px) {
-            .table-container {
-                border: none;
-                overflow-x: hidden;
-                max-height: none;
-            }
-            table, tbody, tr, td {
-                display: block;
-                width: 100%;
-            }
-            table {
-                table-layout: auto;
-                border-collapse: separate;
-                border-spacing: 0 10px;
-            }
-            th {
-                display: none;
-            }
-            tr {
-                background: #fff;
-                border: 1px solid #ddd;
-                border-radius: 12px;
-                padding: 10px;
-                box-shadow: 0 1px 5px rgba(0,0,0,.06);
-            }
-            td {
-                border-bottom: 1px solid #eee;
-                display: grid;
-                grid-template-columns: 42% 58%;
-                gap: 8px;
-                padding: 8px 4px;
-                text-align: left;
-            }
-            td:last-child {
-                border-bottom: 0;
-            }
-            td::before {
-                content: attr(data-label);
-                font-weight: 700;
-                color: #555;
-            }
-            td.number-col {
-                text-align: left;
-            }
-            .no-data {
-                display: block;
-                width: 100%;
-                text-align: center;
-            }
-            .no-data::before {
-                content: "";
-            }
-            body.dark-mode tr {
-                background: #1e1e1e;
-                border-color: #444;
-                box-shadow: 0 1px 5px rgba(255,255,255,.04);
-            }
-            body.dark-mode td {
-                border-bottom-color: #333;
-            }
-            body.dark-mode td::before {
-                color: #bbb;
-            }
-        }
-
         @media (max-width: 700px) {
             body { padding: 10px; }
             .container { padding: 15px; }
             .controls { flex-direction: column; align-items: stretch; }
             select, input[type="text"], button { width: 100%; }
         }
+    
+
+        /* FINAL iPhone/mobile table fix: full-width readable cards */
+        @media (max-width: 700px) {
+            .table-container {
+                width: 100%;
+                overflow-x: hidden !important;
+                border: 0;
+                max-height: none !important;
+            }
+
+            #dataTable,
+            #dataTable tbody,
+            #dataTable tr,
+            #dataTable td {
+                display: block;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            #dataTable {
+                table-layout: auto !important;
+                border-collapse: separate;
+                border-spacing: 0 12px;
+            }
+
+            #dataTable th {
+                display: none !important;
+            }
+
+            #dataTable tr {
+                background-color: #f1f8ff;
+                border: 1px solid #d7e7f7;
+                border-radius: 14px;
+                padding: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            }
+
+            #dataTable td {
+                box-sizing: border-box;
+                border-bottom: 1px solid rgba(0,0,0,.08);
+                padding: 9px 4px;
+                white-space: normal !important;
+                overflow-wrap: break-word;
+                word-break: normal;
+                text-align: left !important;
+                font-size: 16px;
+                line-height: 1.25;
+            }
+
+            #dataTable td:last-child {
+                border-bottom: 0;
+            }
+
+            #dataTable td::before {
+                content: attr(data-label);
+                display: block;
+                margin-bottom: 3px;
+                font-size: 12px;
+                line-height: 1.1;
+                font-weight: 700;
+                color: #555;
+                text-transform: uppercase;
+                letter-spacing: .02em;
+                white-space: nowrap;
+            }
+
+            #dataTable td.no-data {
+                background-color: transparent;
+                border: 1px solid #ddd;
+                border-radius: 12px;
+                padding: 18px;
+                text-align: center !important;
+            }
+
+            #dataTable td.no-data::before {
+                content: none !important;
+            }
+
+            body.dark-mode #dataTable tr {
+                background-color: #1e1e1e;
+                border-color: #444;
+                box-shadow: 0 2px 8px rgba(255,255,255,.04);
+            }
+
+            body.dark-mode #dataTable td {
+                border-bottom-color: #333;
+            }
+
+            body.dark-mode #dataTable td::before {
+                color: #bbb;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -191,6 +197,18 @@
     let headers = [];
     let allRawData = [];
     let currentBirthdayData = [];
+
+    function getDisplayColumnLabel(columnName) {
+        const labels = {
+            first_name: "First Name",
+            mid_name: "Middle Name",
+            last_name: "Last Name",
+            date_birth: "Birth Date",
+            age_today: "Age"
+        };
+        return labels[columnName] || columnName;
+    }
+
 
     const themeToggleBtn = document.getElementById("themeToggleBtn");
 
@@ -359,7 +377,7 @@
             const tr = document.createElement("tr");
             row.forEach((cell, index) => {
                 const td = document.createElement("td");
-                td.setAttribute("data-label", birthdayColumns[index]);
+                td.setAttribute("data-label", getDisplayColumnLabel(birthdayColumns[index]));
                 td.textContent = cell !== undefined && cell !== null ? cell : "";
                 if (birthdayColumns[index] === "age_today") td.className = "number-col";
                 if (birthdayColumns[index] === "date_birth") td.className = "date-col";
