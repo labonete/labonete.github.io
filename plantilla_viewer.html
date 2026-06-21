@@ -116,7 +116,6 @@
     <div class="container">
         <h1>Excel → Google Sheets Database</h1>
 
-        <!-- Upload Section: ONLY to UPDATE sheet -->
         <div class="upload-area">
             <h3>Upload Excel File (REPLACES Data in Google Sheets)</h3>
             <input type="file" id="excelFile" accept=".xlsx, .xls, .csv">
@@ -124,7 +123,6 @@
             <div id="statusMsg" class="status"></div>
         </div>
 
-        <!-- Search Section -->
         <div class="search-area">
             <select id="columnSelect">
                 <option value="">Select Column</option>
@@ -136,7 +134,6 @@
             <button id="clearDataBtn" class="btn-danger">Clear All Data</button>
         </div>
 
-        <!-- Data Table: ALWAYS from Google Sheets -->
         <div class="table-container">
             <table id="dataTable">
                 <tbody id="tableBody">
@@ -147,19 +144,14 @@
     </div>
 
     <script>
-        // --------------------------
-        // ✅ REPLACE THIS WITH YOUR /exec URL
-        // --------------------------
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxp1cRH8qdIZz6E1DfIZajoJoYTakGhDZXDHphslFBl4Atg9JrTZoIN7ferLC9InSg/exec";
+        // ✅ YOUR CORRECT /exec URL HERE
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2uXE-VzAjXQ7GMWEpVrZpvaoOWct1ti-25NBavFQ27ywBBlmh6oJQzST9spf4_bJwAg/exec";
         const SHEET_NAME = "Sheet1";
 
         let allData = [];
         let headers = [];
         let columnTypes = [];
 
-        // --------------------------
-        // FORMATTING FUNCTIONS
-        // --------------------------
         function formatDate(dateValue) {
             if (!dateValue) return "";
             let date;
@@ -198,7 +190,6 @@
             return false;
         }
 
-        // AUTO-DETECT COLUMN TYPES
         function detectColumnTypes(dataRows) {
             if (!dataRows || dataRows.length === 0) return [];
             const colCount = dataRows[0].length;
@@ -232,24 +223,15 @@
             return value;
         }
 
-        // ==================================================
-        // ✅ APP STARTS BY LOADING FROM GOOGLE SHEETS ONLY
-        // ==================================================
         window.addEventListener('load', function() {
             loadDataFromSheet();
         });
 
-        // ==================================================
-        // 🔄 REFRESH BUTTON FUNCTION
-        // ==================================================
         document.getElementById('refreshBtn').addEventListener('click', function() {
             showStatus("🔄 Refreshing latest data from Google Sheets...", "success");
             loadDataFromSheet();
         });
 
-        // ==================================================
-        // UPLOAD EXCEL = ONLY TO UPDATE GOOGLE SHEETS
-        // ==================================================
         document.getElementById('excelFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -275,7 +257,6 @@
                 columnTypes = detectColumnTypes(rawData);
                 allData = rawData.map(row => row.map((cell, i) => formatCell(cell, columnTypes[i])));
 
-                // SAVE NEW DATA TO GOOGLE SHEETS
                 showStatus("⏳ Saving new data to Google Sheets...", "success");
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: "POST",
@@ -290,16 +271,13 @@
                 })
                 .then(() => {
                     showStatus("✅ Google Sheets UPDATED! Refreshing data...", "success");
-                    loadDataFromSheet(); // auto-refresh after upload
+                    loadDataFromSheet();
                 })
                 .catch(err => showStatus("❌ Error: " + err.message, "error"));
             };
             reader.readAsArrayBuffer(file);
         });
 
-        // ==================================================
-        // LOAD DATA ALWAYS FROM GOOGLE SHEETS
-        // ==================================================
         function loadDataFromSheet() {
             fetch(GOOGLE_SCRIPT_URL + "?action=getData&sheetName=" + SHEET_NAME)
                 .then(res => res.json())
@@ -366,7 +344,6 @@
             });
         }
 
-        // Search
         document.getElementById('searchBtn').addEventListener('click', function() {
             const colIndex = document.getElementById('columnSelect').value;
             const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -384,14 +361,12 @@
             displayData(filteredData);
         });
 
-        // Reset
         document.getElementById('resetBtn').addEventListener('click', function() {
             document.getElementById('columnSelect').value = '';
             document.getElementById('searchInput').value = '';
             displayData(allData);
         });
 
-        // Clear data
         document.getElementById('clearDataBtn').addEventListener('click', function() {
             if (confirm('⚠️ Delete ALL data from Google Sheet? This cannot be undone!')) {
                 fetch(GOOGLE_SCRIPT_URL, {
