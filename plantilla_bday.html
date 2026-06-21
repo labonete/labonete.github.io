@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel to Google Sheets Viewer</title>
+    <title>Birthday Celebrants Viewer</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
         body { padding: 20px; background-color: #f5f5f5; color: #222; transition: background-color .3s, color .3s; }
-        .container { max-width: 1300px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
         h1 { text-align: center; color: #333; margin-bottom: 20px; }
         .upload-area { margin-bottom: 20px; padding: 15px; border: 2px dashed #28a745; border-radius: 6px; text-align: center; }
         input[type="file"] { margin: 10px 0; }
-        .search-area { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
         select, input[type="text"], button { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
         button { background-color: #007bff; color: #fff; border: none; cursor: pointer; }
         button:hover { opacity: .9; }
@@ -52,32 +52,26 @@
         @media (max-width: 700px) {
             body { padding: 10px; }
             .container { padding: 15px; }
-            .search-area { flex-direction: column; align-items: stretch; }
+            .controls { flex-direction: column; align-items: stretch; }
             select, input[type="text"], button { width: 100%; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Excel → Google Sheets Database</h1>
+    <h1>🎂 Birthday Celebrants Viewer</h1>
 
     <div class="upload-area">
         <h3>Upload Excel File (REPLACES Data in Google Sheets)</h3>
         <input type="file" id="excelFile" accept=".xlsx, .xls, .csv">
         <p>Supported formats: .xlsx, .xls, .csv — Use only to update data</p>
-        <p class="hint">Birthday filter requires these headers: first_name, mid_name, last_name, date_birth, age_today</p>
+        <p class="hint">Display is limited to: first_name, mid_name, last_name, date_birth, age_today</p>
         <div id="statusMsg" class="status"></div>
     </div>
 
-    <div class="search-area">
-        <select id="columnSelect">
-            <option value="">All Columns</option>
-        </select>
-
-        <input type="text" id="searchInput" placeholder="Search all entries by default...">
-
+    <div class="controls">
         <select id="birthdayMonthSelect">
-            <option value="">Birthday Month</option>
+            <option value="">Select Birthday Month</option>
             <option value="1">January</option>
             <option value="2">February</option>
             <option value="3">March</option>
@@ -92,7 +86,7 @@
             <option value="12">December</option>
         </select>
 
-        <button id="searchBtn">Search</button>
+        <input type="text" id="searchInput" placeholder="Search displayed birthday celebrants...">
         <button id="birthdayBtn" class="btn-warning">🎂 Show Birthday Celebrants</button>
         <button id="resetBtn">Reset</button>
         <button id="refreshBtn" class="btn-success">🔄 Refresh Data</button>
@@ -113,12 +107,13 @@
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2uXE-VzAjXQ7GMWEpVrZpvaoOWct1ti-25NBavFQ27ywBBlmh6oJQzST9spf4_bJwAg/exec";
     const SHEET_NAME = "Sheet1";
 
-    let allData = [];
-    let rawDataForFiltering = [];
-    let headers = [];
-    let columnTypes = [];
-
     const birthdayColumns = ["first_name", "mid_name", "last_name", "date_birth", "age_today"];
+
+    let headers = [];
+    let allRawData = [];
+    let columnTypes = [];
+    let currentBirthdayData = [];
+
     const themeToggleBtn = document.getElementById("themeToggleBtn");
 
     function applySavedTheme() {
@@ -145,25 +140,25 @@
 
     applySavedTheme();
 
-    function formatDate(dateValue) {
-        if (!dateValue) return "";
-        let date;
-        if (typeof dateValue === "number") {
-            date = new Date((dateValue - 25569) * 86400 * 1000);
-        } else if (dateValue instanceof Date) {
-            date = dateValue;
-        } else {
-            date = new Date(dateValue);
-        }
-        if (isNaN(date.getTime())) return dateValue;
-        return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" });
+    function normalizeHeader(header) {
+        return header ? header.toString().trim().toLowerCase() : "";
     }
 
-    function formatNumber(numValue) {
-        if (numValue === "" || numValue === null || numValue === undefined) return "";
-        let num = Number(numValue.toString().replace(/,/g, ""));
-        if (isNaN(num)) return numValue;
-        return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function getColumnIndexByName(columnName) {
+        return headers.findIndex(header => normalizeHeader(header) === normalizeHeader(columnName));
+    }
+
+    function isNumberValue(val) {
+        if (val === "" || val === null || val === undefined) return false;
+        if (typeof val === "number") return true;
+        if (typeof val === "string") return !isNaN(Number(val.replace(/,/g, "")));
+        return false;
+    }
+
+    function isDateColumnByHeader(header) {
+        if (!header) return false;
+        const h = header.toString().toLowerCase();
+        return h.includes("date") || h.includes("birth") || h.includes("appoint") || h.includes("promo") || h.includes("retire") || h.includes("effectivity");
     }
 
     function isDateValue(val) {
@@ -178,19 +173,6 @@
             if (!isNaN(Date.parse(trimmed)) && /[a-zA-Z]/.test(trimmed)) return true;
         }
         return false;
-    }
-
-    function isNumberValue(val) {
-        if (val === "" || val === null || val === undefined) return false;
-        if (typeof val === "number") return true;
-        if (typeof val === "string") return !isNaN(Number(val.replace(/,/g, ""))) && !isDateValue(val);
-        return false;
-    }
-
-    function isDateColumnByHeader(header) {
-        if (!header) return false;
-        const h = header.toString().toLowerCase();
-        return h.includes("date") || h.includes("birth") || h.includes("appoint") || h.includes("promo") || h.includes("retire") || h.includes("effectivity");
     }
 
     function detectColumnTypes(dataRows) {
@@ -224,20 +206,25 @@
         return types;
     }
 
+    function formatDate(dateValue) {
+        if (!dateValue) return "";
+        const date = parseBirthdayDate(dateValue);
+        if (!date) return dateValue;
+        return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" });
+    }
+
+    function formatNumber(numValue) {
+        if (numValue === "" || numValue === null || numValue === undefined) return "";
+        const num = Number(numValue.toString().replace(/,/g, ""));
+        if (isNaN(num)) return numValue;
+        return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     function formatCell(value, type) {
         if (value === null || value === undefined) return "";
         if (type === "date") return formatDate(value);
         if (type === "number") return formatNumber(value);
         return value;
-    }
-
-    function normalizeHeader(header) {
-        return header ? header.toString().trim().toLowerCase() : "";
-    }
-
-    function getColumnIndexByName(columnName) {
-        const normalizedColumnName = normalizeHeader(columnName);
-        return headers.findIndex(header => normalizeHeader(header) === normalizedColumnName);
     }
 
     function parseBirthdayDate(value) {
@@ -250,15 +237,10 @@
             date = value;
         } else if (typeof value === "string") {
             const trimmed = value.trim();
-            let match;
-
-            // Handles formatted dates such as "June 21, 1990"
             date = new Date(trimmed);
 
-            // Fallback for dd/mm/yyyy or mm/dd/yyyy style dates.
-            // If first number is greater than 12, assumes dd/mm/yyyy.
             if (isNaN(date.getTime())) {
-                match = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+                const match = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
                 if (match) {
                     const a = Number(match[1]);
                     const b = Number(match[2]);
@@ -280,40 +262,21 @@
 
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
-
-        const hasBirthdayPassedThisYear =
-            today.getMonth() > birthDate.getMonth() ||
+        const birthdayPassed = today.getMonth() > birthDate.getMonth() ||
             (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
 
-        if (!hasBirthdayPassedThisYear) age--;
+        if (!birthdayPassed) age--;
         return age;
     }
 
-    function displayBirthdayCelebrants(monthNumber) {
-        if (!headers || headers.length === 0 || !rawDataForFiltering || rawDataForFiltering.length === 0) {
-            document.getElementById("tableBody").innerHTML =
-                `<tr><td class="no-data">⚠️ No data available. Please load or upload data first.</td></tr>`;
-            showStatus("⚠️ No data available. Please load or upload data first.", "warning");
-            return;
-        }
-
-        const dateBirthIndex = getColumnIndexByName("date_birth");
-        if (dateBirthIndex === -1) {
-            document.getElementById("tableBody").innerHTML =
-                `<tr><td class="no-data">❌ Column "date_birth" was not found.</td></tr>`;
-            showStatus(`❌ Column "date_birth" was not found.`, "error");
-            return;
-        }
-
+    function buildBirthdayRows(monthNumber) {
         const selectedMonth = Number(monthNumber);
-        if (!selectedMonth) {
-            showStatus("⚠️ Please select a birthday month.", "warning");
-            return;
-        }
-
+        const dateBirthIndex = getColumnIndexByName("date_birth");
         const columnIndexes = birthdayColumns.map(columnName => getColumnIndexByName(columnName));
 
-        const filteredBirthdayData = rawDataForFiltering
+        if (dateBirthIndex === -1) return { error: 'Column "date_birth" was not found.' };
+
+        const rows = allRawData
             .filter(row => {
                 const birthDate = parseBirthdayDate(row[dateBirthIndex]);
                 if (!birthDate) return false;
@@ -337,13 +300,10 @@
                 });
             });
 
-        displayBirthdayTable(filteredBirthdayData);
-
-        const monthName = document.querySelector(`#birthdayMonthSelect option[value="${selectedMonth}"]`).textContent;
-        showStatus(`🎂 Showing ${filteredBirthdayData.length} birthday celebrant(s) for ${monthName}.`, "success");
+        return { rows };
     }
 
-    function displayBirthdayTable(data) {
+    function displayBirthdayTable(data, message) {
         const tableBody = document.getElementById("tableBody");
         tableBody.innerHTML = "";
 
@@ -360,7 +320,7 @@
             const td = document.createElement("td");
             td.className = "no-data";
             td.colSpan = birthdayColumns.length;
-            td.textContent = "No birthday celebrants found for the selected month.";
+            td.textContent = message || "No birthday celebrants found.";
             tr.appendChild(td);
             tableBody.appendChild(tr);
             return;
@@ -377,6 +337,48 @@
             });
             tableBody.appendChild(tr);
         });
+    }
+
+    function showBirthdayCelebrants() {
+        const selectedMonth = document.getElementById("birthdayMonthSelect").value;
+        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+        if (!headers || headers.length === 0 || !allRawData || allRawData.length === 0) {
+            displayBirthdayTable([], "No data available. Please load or upload data first.");
+            showStatus("⚠️ No data available. Please load or upload data first.", "warning");
+            return;
+        }
+
+        if (!selectedMonth) {
+            currentBirthdayData = [];
+            displayBirthdayTable([], "Please select a birthday month to show celebrants.");
+            showStatus("⚠️ Please select a birthday month.", "warning");
+            return;
+        }
+
+        const result = buildBirthdayRows(selectedMonth);
+        if (result.error) {
+            displayBirthdayTable([], result.error);
+            showStatus("❌ " + result.error, "error");
+            return;
+        }
+
+        currentBirthdayData = result.rows;
+        let displayedRows = currentBirthdayData;
+
+        if (keyword) {
+            displayedRows = currentBirthdayData.filter(row =>
+                row.some(cell => (cell !== undefined && cell !== null ? cell.toString().toLowerCase() : "").includes(keyword))
+            );
+        }
+
+        const monthName = document.querySelector(`#birthdayMonthSelect option[value="${selectedMonth}"]`).textContent;
+        const message = keyword
+            ? `No matching birthday celebrants found for ${monthName}.`
+            : `No birthday celebrants found for ${monthName}.`;
+
+        displayBirthdayTable(displayedRows, message);
+        showStatus(`🎂 Showing ${displayedRows.length} birthday celebrant(s) for ${monthName}.`, "success");
     }
 
     window.addEventListener("load", function () {
@@ -407,16 +409,16 @@
             }
 
             headers = jsonData[0];
-            rawDataForFiltering = jsonData.slice(1).filter(row => row.some(cell => cell !== undefined && cell !== ""));
-            columnTypes = detectColumnTypes(rawDataForFiltering);
-            allData = rawDataForFiltering.map(row => headers.map((_, i) => formatCell(row[i], columnTypes[i])));
+            allRawData = jsonData.slice(1).filter(row => row.some(cell => cell !== undefined && cell !== ""));
+            columnTypes = detectColumnTypes(allRawData);
+            const formattedDataForSaving = allRawData.map(row => headers.map((_, i) => formatCell(row[i], columnTypes[i])));
 
             showStatus("⏳ Saving new data to Google Sheets...", "success");
 
             fetch(GOOGLE_SCRIPT_URL, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action: "saveData", sheetName: SHEET_NAME, headers: headers, data: allData })
+                body: JSON.stringify({ action: "saveData", sheetName: SHEET_NAME, headers: headers, data: formattedDataForSaving })
             })
             .then(res => res.json())
             .then(result => {
@@ -437,122 +439,45 @@
         .then(res => res.json())
         .then(data => {
             if (data.error) {
-                document.getElementById("tableBody").innerHTML = `<tr><td class="no-data">❌ ${data.error}</td></tr>`;
+                displayBirthdayTable([], data.error);
                 showStatus("❌ " + data.error, "error");
                 return;
             }
 
             if (data && data.headers && data.data && data.headers.length > 0) {
                 headers = data.headers;
-                rawDataForFiltering = data.data;
-                columnTypes = detectColumnTypes(rawDataForFiltering);
-                allData = rawDataForFiltering.map(row => headers.map((_, i) => formatCell(row[i], columnTypes[i])));
-                updateColumnDropdown();
-                displayData(allData);
-                showStatus("✅ Latest data loaded FROM GOOGLE SHEETS", "success");
+                allRawData = data.data;
+                columnTypes = detectColumnTypes(allRawData);
+                showStatus("✅ Latest data loaded FROM GOOGLE SHEETS. Select a month to show birthday celebrants.", "success");
+                showBirthdayCelebrants();
             } else {
                 headers = [];
-                allData = [];
-                rawDataForFiltering = [];
+                allRawData = [];
                 columnTypes = [];
-                document.getElementById("tableBody").innerHTML = `<tr><td class="no-data">⚠️ Google Sheet is empty. Upload Excel file to add data.</td></tr>`;
+                currentBirthdayData = [];
+                displayBirthdayTable([], "Google Sheet is empty. Upload Excel file to add data.");
                 showStatus("⚠️ Google Sheet is empty", "warning");
             }
         })
         .catch(err => {
-            document.getElementById("tableBody").innerHTML = `<tr><td class="no-data">❌ Failed to load from Google Sheets. Check your connection/URL.</td></tr>`;
+            displayBirthdayTable([], "Failed to load from Google Sheets. Check your connection/URL.");
             showStatus("❌ Error loading data: " + err.message, "error");
         });
     }
 
-    function updateColumnDropdown() {
-        const columnSelect = document.getElementById("columnSelect");
-        columnSelect.innerHTML = `<option value="">All Columns</option>`;
-        headers.forEach((header, index) => {
-            const option = document.createElement("option");
-            option.value = index;
-            option.textContent = header || `Column ${index + 1}`;
-            columnSelect.appendChild(option);
-        });
-    }
-
-    function displayData(data) {
-        const tableBody = document.getElementById("tableBody");
-        tableBody.innerHTML = "";
-
-        if (!data || data.length === 0) {
-            tableBody.innerHTML = `<tr><td class="no-data">No matching records found</td></tr>`;
-            return;
-        }
-
-        const headerRow = document.createElement("tr");
-        headers.forEach(header => {
-            const th = document.createElement("th");
-            th.textContent = header || "";
-            headerRow.appendChild(th);
-        });
-        tableBody.appendChild(headerRow);
-
-        data.forEach(row => {
-            const tr = document.createElement("tr");
-            headers.forEach((_, colIndex) => {
-                const td = document.createElement("td");
-                td.textContent = row[colIndex] !== undefined && row[colIndex] !== null ? row[colIndex] : "";
-                if (columnTypes[colIndex] === "number") td.className = "number-col";
-                if (columnTypes[colIndex] === "date") td.className = "date-col";
-                tr.appendChild(td);
-            });
-            tableBody.appendChild(tr);
-        });
-    }
-
-    document.getElementById("searchBtn").addEventListener("click", function () {
-        const colIndex = document.getElementById("columnSelect").value;
-        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
-
-        if (keyword === "") {
-            displayData(allData);
-            return;
-        }
-
-        let filteredData;
-
-        if (colIndex === "") {
-            filteredData = allData.filter(row => {
-                return row.some(cell => {
-                    const cellValue = cell !== undefined && cell !== null ? cell.toString().toLowerCase() : "";
-                    return cellValue.includes(keyword);
-                });
-            });
-        } else {
-            filteredData = allData.filter(row => {
-                const cellValue = row[colIndex] !== undefined && row[colIndex] !== null ? row[colIndex].toString().toLowerCase() : "";
-                return cellValue.includes(keyword);
-            });
-        }
-
-        displayData(filteredData);
-    });
-
-    document.getElementById("birthdayBtn").addEventListener("click", function () {
-        const selectedMonth = document.getElementById("birthdayMonthSelect").value;
-        displayBirthdayCelebrants(selectedMonth);
-    });
-
-    document.getElementById("birthdayMonthSelect").addEventListener("change", function () {
-        if (this.value) displayBirthdayCelebrants(this.value);
-    });
-
+    document.getElementById("birthdayBtn").addEventListener("click", showBirthdayCelebrants);
+    document.getElementById("birthdayMonthSelect").addEventListener("change", showBirthdayCelebrants);
+    document.getElementById("searchInput").addEventListener("input", showBirthdayCelebrants);
     document.getElementById("searchInput").addEventListener("keydown", function (e) {
-        if (e.key === "Enter") document.getElementById("searchBtn").click();
+        if (e.key === "Enter") showBirthdayCelebrants();
     });
 
     document.getElementById("resetBtn").addEventListener("click", function () {
-        document.getElementById("columnSelect").value = "";
-        document.getElementById("searchInput").value = "";
         document.getElementById("birthdayMonthSelect").value = "";
-        displayData(allData);
-        showStatus("✅ View reset.", "success");
+        document.getElementById("searchInput").value = "";
+        currentBirthdayData = [];
+        displayBirthdayTable([], "Please select a birthday month to show celebrants.");
+        showStatus("✅ View reset. Select a birthday month.", "success");
     });
 
     document.getElementById("clearDataBtn").addEventListener("click", function () {
@@ -569,13 +494,13 @@
                 showStatus("❌ " + result.error, "error");
                 return;
             }
-            allData = [];
-            rawDataForFiltering = [];
             headers = [];
+            allRawData = [];
             columnTypes = [];
-            document.getElementById("columnSelect").innerHTML = `<option value="">All Columns</option>`;
+            currentBirthdayData = [];
             document.getElementById("birthdayMonthSelect").value = "";
-            document.getElementById("tableBody").innerHTML = `<tr><td class="no-data">✅ Sheet cleared. Upload new file to start.</td></tr>`;
+            document.getElementById("searchInput").value = "";
+            displayBirthdayTable([], "Sheet cleared. Upload new file to start.");
             showStatus("✅ Sheet cleared", "success");
         })
         .catch(err => showStatus("❌ Error: " + err.message, "error"));
