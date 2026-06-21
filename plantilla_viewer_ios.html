@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to Google Sheets Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --card: #ffffff;
+            --text: #172033;
+            --muted: #667085;
+            --border: #d0d5dd;
+            --primary: #0b74de;
+            --primary-strong: #075fb8;
+            --success: #198754;
+            --danger: #dc3545;
+            --dark: #343a40;
+            --focus: rgba(11, 116, 222, .28);
+            --radius: 14px;
+            --shadow: 0 6px 22px rgba(16, 24, 40, .08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background-color .3s, color .3s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1300px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 16px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text);
+            margin-bottom: 16px;
+            font-size: clamp(1.35rem, 5.4vw, 2rem);
+            line-height: 1.15;
+            letter-spacing: -.02em;
+        }
+
+        h3 {
+            font-size: 1rem;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+
+        .upload-area {
+            margin-bottom: 16px;
+            padding: 14px;
+            border: 2px dashed var(--success);
+            border-radius: 12px;
+            text-align: center;
+            background: #f7fff9;
+        }
+
+        .upload-area p {
+            color: var(--muted);
+            font-size: .9rem;
+            line-height: 1.35;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            max-width: 100%;
+            margin: 10px 0;
+            font-size: .95rem;
+        }
+
+        .search-area {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+            align-items: stretch;
+        }
+
+        select,
+        input[type="text"],
+        button {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        select,
+        input[type="text"] {
+            background: #fff;
+            color: var(--text);
+        }
+
+        select:focus,
+        input[type="text"]:focus,
+        button:focus-visible {
+            outline: 3px solid var(--focus);
+            outline-offset: 1px;
+        }
+
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background-color: var(--primary);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            touch-action: manipulation;
+        }
+
+        button:hover { opacity: .94; }
+        button:active { transform: translateY(1px); }
+        .btn-success { background-color: var(--success); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-dark { background-color: var(--dark); }
+
+        .table-container {
+            width: 100%;
+            overflow: auto;
+            max-height: 62vh;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            -webkit-overflow-scrolling: touch;
+            background: #fff;
+        }
+
+        table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 11px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            font-size: .92rem;
+            line-height: 1.3;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        td.number-col { text-align: right; }
+        td.date-col { text-align: left; }
+        tr:hover { background-color: #f1f8ff; }
+
+        .no-data {
+            width: 100%;
+            text-align: center;
+            color: var(--muted);
+            padding: 24px 14px;
+            white-space: normal;
+        }
+
+        .status {
+            font-size: .92rem;
+            margin: 8px 0 0;
+            font-weight: 700;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+
+        .success { color: var(--success); }
+        .error { color: var(--danger); }
+        .warning { color: #b26a00; }
+
+        body.dark-mode {
+            background-color: #121212;
+            color: #f1f1f1;
+        }
+
+        body.dark-mode .container {
+            background-color: #1e1e1e;
+            color: #f1f1f1;
+            box-shadow: 0 2px 12px rgba(255,255,255,.08);
+        }
+
+        body.dark-mode h1 { color: #fff; }
+        body.dark-mode .upload-area {
+            background-color: #181818;
+            border-color: #4caf50;
+        }
+        body.dark-mode .upload-area p { color: #ccc; }
+
+        body.dark-mode select,
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="file"] {
+            background-color: #2b2b2b;
+            color: #fff;
+            border: 1px solid #555;
+        }
+
+        body.dark-mode input::placeholder { color: #bbb; }
+        body.dark-mode .table-container {
+            border-color: #444;
+            background-color: #1e1e1e;
+        }
+        body.dark-mode table { background-color: #1e1e1e; color: #fff; }
+        body.dark-mode th { background-color: #0d47a1; color: #fff; }
+        body.dark-mode td { border-bottom: 1px solid #444; }
+        body.dark-mode tr:hover { background-color: #2a2a2a; }
+        body.dark-mode .no-data { color: #ccc; }
+        body.dark-mode .btn-dark { background-color: #f8f9fa; color: #222; }
+
+        /* iPhone 13 target: 390px CSS width. This is the primary/mobile layout. */
+        @media (max-width: 430px) {
+            body { padding: 10px; }
+            .container { padding: 14px; border-radius: 12px; }
+            .upload-area { padding: 12px; }
+            .table-container { max-height: 58vh; }
+            th, td { padding: 10px; font-size: .88rem; }
+        }
+
+        /* Larger phones and small tablets */
+        @media (min-width: 600px) {
+            .container { padding: 20px; }
+            .search-area { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            #columnSelect, #searchInput { grid-column: span 2; }
+        }
+
+        /* Tablet/desktop enhancements */
+        @media (min-width: 900px) {
+            body { padding: 20px; }
+            .container { padding: 25px; border-radius: 8px; }
+            .search-area {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+            }
+            #columnSelect { width: auto; min-width: 180px; }
+            #searchInput { width: min(360px, 32vw); }
+            button { width: auto; }
+            .table-container { max-height: 650px; border-radius: 4px; }
+            table { width: 100%; }
+            th, td { padding: 10px; font-size: .875rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Excel → Google Sheets Database</h1>
+
+    <div class="upload-area">
+        <h3>Upload Excel File (REPLACES Data in Google Sheets)</h3>
+        <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" aria-label="Upload Excel or CSV file">
+        <p>Supported formats: .xlsx, .xls, .csv — Use only to update data</p>
+        <div id="statusMsg" class="status"></div>
+    </div>
+
+    <div class="search-area">
+        <select id="columnSelect" aria-label="Select column to search">
+            <option value="">All Columns</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="Search all entries..." aria-label="Search entries">
+        <button id="searchBtn">Search</button>
+        <button id="resetBtn">Reset</button>
+        <button id="refreshBtn" class="btn-success">🔄 Refresh Data</button>
+        <button id="clearDataBtn" class="btn-danger">Clear All Data</button>
+        <button id="themeToggleBtn" class="btn-dark">🌙 Dark Mode</button>
+    </div>
+
+    <div class="table-container">
+        <table id="dataTable">
+            <tbody id="tableBody">
+                <tr><td class="no-data">🔄 Loading data FROM GOOGLE SHEETS...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2uXE-VzAjXQ7GMWEpVrZpvaoOWct1ti-25NBavFQ27ywBBlmh6oJQzST9spf4_bJwAg/exec";
+    const SHEET_NAME = "Sheet1";
+
+    let allData = [];
+    let headers = [];
+    let columnTypes = [];
+
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+
+    function applySavedTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+            document.body.classList.add("dark-mode");
+            themeToggleBtn.textContent = "☀️ Light Mode";
+        } else {
+            document.body.classList.remove("dark-mode");
+            themeToggleBtn.textContent = "🌙 Dark Mode";
+        }
+    }
+
+    themeToggleBtn.addEventListener("click", function () {
+        document.body.classList.toggle("dark-mode");
+        if (document.body.classList.contains("dark-mode")) {
+            localStorage.setItem("theme", "dark");
+            themeToggleBtn.textContent = "☀️ Light Mode";
+        } else {
+            localStorage.setItem("theme", "light");
+            themeToggleBtn.textContent = "🌙 Dark Mode";
+        }
+    });
+
+    applySavedTheme();
+
+    function formatDate(dateValue) {
+        if (!dateValue) return "";
+        let date;
+        if (typeof dateValue === "number") {
+            date = new Date((dateValue - 25569) * 86400 * 1000);
+        } else {
+            date = new Date(dateValue);
+        }
+        if (isNaN(date.getTime())) return dateValue;
+        return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" });
+    }
+
+    function formatNumber(numValue) {
+        if (numValue === "" || numValue === null || numValue === undefined) return "";
+        let num = Number(numValue.toString().replace(/,/g, ""));
+        if (isNaN(num)) return numValue;
+        return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function isDateValue(val) {
+        if (!val) return false;
+        if (typeof val === "number" && val > 25569 && val < 60000) return true;
+        if (typeof val === "string") {
+            const trimmed = val.trim();
+            if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) return true;
+            if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(trimmed)) return true;
+            if (/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/.test(trimmed)) return true;
+            if (!isNaN(Date.parse(trimmed)) && /[a-zA-Z]/.test(trimmed)) return true;
+        }
+        return false;
+    }
+
+    function isNumberValue(val) {
+        if (val === "" || val === null || val === undefined) return false;
+        if (typeof val === "number") return true;
+        if (typeof val === "string") return !isNaN(Number(val.replace(/,/g, ""))) && !isDateValue(val);
+        return false;
+    }
+
+    function isDateColumnByHeader(header) {
+        if (!header) return false;
+        const h = header.toString().toLowerCase();
+        return h.includes("date") || h.includes("birth") || h.includes("appoint") || h.includes("promo") || h.includes("retire") || h.includes("effectivity");
+    }
+
+    function detectColumnTypes(dataRows) {
+        if (!dataRows || dataRows.length === 0) return [];
+        const colCount = headers.length || dataRows[0].length;
+        const types = new Array(colCount).fill("text");
+
+        for (let col = 0; col < colCount; col++) {
+            if (isDateColumnByHeader(headers[col])) {
+                types[col] = "date";
+                continue;
+            }
+
+            let dateCount = 0;
+            let numberCount = 0;
+            let totalCount = 0;
+
+            for (let row = 0; row < dataRows.length; row++) {
+                const val = dataRows[row][col];
+                if (val === "" || val === null || val === undefined) continue;
+                totalCount++;
+                if (isDateValue(val)) dateCount++;
+                else if (isNumberValue(val)) numberCount++;
+            }
+
+            if (totalCount === 0) types[col] = "text";
+            else if (dateCount / totalCount >= 0.6) types[col] = "date";
+            else if (numberCount / totalCount >= 0.6) types[col] = "number";
+            else types[col] = "text";
+        }
+        return types;
+    }
+
+    function formatCell(value, type) {
+        if (value === null || value === undefined) return "";
+        if (type === "date") return formatDate(value);
+        if (type === "number") return formatNumber(value);
+        return value;
+    }
+
+    window.addEventListener("load", function () {
+        loadDataFromSheet();
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", function () {
+        showStatus("🔄 Refreshing latest data from Google Sheets...", "success");
+        loadDataFromSheet();
+    });
+
+    document.getElementById("excelFile").addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        showStatus("⏳ Reading file...", "success");
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: "array", cellDates: true });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true });
+
+            if (jsonData.length < 1) {
+                showStatus("❌ No data found in file", "error");
+                return;
+            }
+
+            headers = jsonData[0];
+            const rawData = jsonData.slice(1).filter(row => row.some(cell => cell !== undefined && cell !== ""));
+            columnTypes = detectColumnTypes(rawData);
+            allData = rawData.map(row => headers.map((_, i) => formatCell(row[i], columnTypes[i])));
+
+            showStatus("⏳ Saving new data to Google Sheets...", "success");
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "saveData", sheetName: SHEET_NAME, headers: headers, data: allData })
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.error) {
+                    showStatus("❌ " + result.error, "error");
+                    return;
+                }
+                showStatus("✅ Google Sheets UPDATED! Refreshing data...", "success");
+                loadDataFromSheet();
+            })
+            .catch(err => showStatus("❌ Error: " + err.message, "error"));
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    function loadDataFromSheet() {
+        fetch(GOOGLE_SCRIPT_URL + "?action=getData&sheetName=" + encodeURIComponent(SHEET_NAME))
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById("tableBody").innerHTML = `<tr><td class="no-data">❌ ${data.error}</td></tr>`;
+                showStatus("❌ " + data.error, "error");
+                return;
+            }
+
+            if (data && data.headers && data.data && data.headers.length > 0) {
+                headers = data.headers;
+                const rawData = data.data;
+                columnTypes = detectColumnTypes(rawData);
+                allData = rawData.map(row => headers.map((_, i) => formatCell(row[i], columnTypes[i])));
+                updateColumnDropdown();
+                displayData(allData);
+                showStatus("✅ Latest data loaded FROM GOOGLE SHEETS", "success");
+            } else {
+                headers = [];
+                allData = [];
+                columnTypes = [];
+                document.getElementById("tableBody").innerHTML = `<tr><td class="no-data">⚠️ Google Sheet is empty. Upload Excel file to add data.</td></tr>`;
+                showStatus("⚠️ Google Sheet is empty", "warning");
+            }
+        })
+        .catch(err => {
+            document.getElementById("tableBody").innerHTML = `<tr><td class="no-data">❌ Failed to load from Google Sheets. Check your connection/URL.</td></tr>`;
+            showStatus("❌ Error loading data: " + err.message, "error");
+        });
+    }
+
+    function updateColumnDropdown() {
+        const columnSelect = document.getElementById("columnSelect");
+        columnSelect.innerHTML = `<option value="">All Columns</option>`;
+        headers.forEach((header, index) => {
+            const option = document.createElement("option");
+            option.value = index;
+            option.textContent = header || `Column ${index + 1}`;
+            columnSelect.appendChild(option);
+        });
+    }
+
+    function displayData(data) {
+        const tableBody = document.getElementById("tableBody");
+        tableBody.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = `<tr><td class="no-data">No matching records found</td></tr>`;
+            return;
+        }
+
+        const headerRow = document.createElement("tr");
+        headers.forEach(header => {
+            const th = document.createElement("th");
+            th.textContent = header || "";
+            headerRow.appendChild(th);
+        });
+        tableBody.appendChild(headerRow);
+
+        data.forEach(row => {
+            const tr = document.createElement("tr");
+            headers.forEach((_, colIndex) => {
+                const td = document.createElement("td");
+                td.textContent = row[colIndex] !== undefined && row[colIndex] !== null ? row[colIndex] : "";
+                if (columnTypes[colIndex] === "number") td.className = "number-col";
+                if (columnTypes[colIndex] === "date") td.className = "date-col";
+                tr.appendChild(td);
+            });
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // SEARCH BEHAVIOR:
+    // Default = search ALL columns.
+    // If a column is selected, search only that selected column.
+    document.getElementById("searchBtn").addEventListener("click", function () {
+        const colIndex = document.getElementById("columnSelect").value;
+        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+        if (keyword === "") {
+            displayData(allData);
+            return;
+        }
+
+        let filteredData;
+
+        if (colIndex === "") {
+            filteredData = allData.filter(row => {
+                return row.some(cell => {
+                    const cellValue = cell !== undefined && cell !== null ? cell.toString().toLowerCase() : "";
+                    return cellValue.includes(keyword);
+                });
+            });
+        } else {
+            filteredData = allData.filter(row => {
+                const cellValue = row[colIndex] !== undefined && row[colIndex] !== null ? row[colIndex].toString().toLowerCase() : "";
+                return cellValue.includes(keyword);
+            });
+        }
+
+        displayData(filteredData);
+    });
+
+    document.getElementById("searchInput").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") document.getElementById("searchBtn").click();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", function () {
+        document.getElementById("columnSelect").value = "";
+        document.getElementById("searchInput").value = "";
+        displayData(allData);
+    });
+
+    document.getElementById("clearDataBtn").addEventListener("click", function () {
+        if (!confirm("⚠️ Delete ALL data from Google Sheet? This cannot be undone!")) return;
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "clearData", sheetName: SHEET_NAME })
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.error) {
+                showStatus("❌ " + result.error, "error");
+                return;
+            }
+            allData = [];
+            headers = [];
+            columnTypes = [];
+            document.getElementById("columnSelect").innerHTML = `<option value="">All Columns</option>`;
+            document.getElementById("tableBody").innerHTML = `<tr><td class="no-data">✅ Sheet cleared. Upload new file to start.</td></tr>`;
+            showStatus("✅ Sheet cleared", "success");
+        })
+        .catch(err => showStatus("❌ Error: " + err.message, "error"));
+    });
+
+    function showStatus(text, type) {
+        const el = document.getElementById("statusMsg");
+        el.textContent = text;
+        el.className = "status " + type;
+    }
+</script>
+</body>
+</html>
