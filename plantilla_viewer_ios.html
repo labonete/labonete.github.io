@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Sheet Viewer">
@@ -50,11 +50,11 @@
         }
 
         .container {
-            width: 100%;
-            max-width: 1300px;
+            width: min(100%, 1600px);
+            max-width: none;
             margin: 0 auto;
             background: var(--card);
-            padding: 16px;
+            padding: clamp(12px, 2vw, 24px);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
         }
@@ -74,6 +74,12 @@
             margin-bottom: 8px;
         }
 
+        .upload-area.hidden-upload {
+            display: none !important;
+        }
+        .hidden-status-placeholder {
+            display: none !important;
+        }
         .upload-area {
             margin-bottom: 16px;
             padding: 14px;
@@ -149,28 +155,31 @@
 
         .table-container {
             width: 100%;
-            overflow: auto;
-            max-height: 62vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            max-height: 68vh;
             border: 1px solid var(--border);
             border-radius: 12px;
             -webkit-overflow-scrolling: touch;
             background: #fff;
         }
-
         table {
-            width: max-content;
-            min-width: 100%;
+            width: 100%;
+            min-width: 0;
             border-collapse: collapse;
+            table-layout: fixed;
         }
-
         th,
         td {
-            padding: 11px 12px;
+            padding: clamp(4px, .65vw, 10px);
             text-align: left;
             border-bottom: 1px solid #e5e7eb;
-            white-space: nowrap;
-            font-size: .92rem;
-            line-height: 1.3;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            hyphens: auto;
+            font-size: var(--table-font-size, clamp(.62rem, .85vw, .9rem));
+            line-height: 1.22;
         }
 
         th {
@@ -272,9 +281,9 @@
             #columnSelect { width: auto; min-width: 180px; }
             #searchInput { width: min(360px, 32vw); }
             button { width: auto; }
-            .table-container { max-height: 650px; border-radius: 4px; }
-            table { width: 100%; }
-            th, td { padding: 10px; font-size: .875rem; }
+            .table-container { max-height: 72vh; border-radius: 8px; }
+            table { width: 100%; table-layout: fixed; }
+            th, td { padding: clamp(4px, .55vw, 9px); font-size: var(--table-font-size, .84rem); }
         }
 
 
@@ -454,17 +463,25 @@
             }
         }
 
+        @media print {
+            body { background: #fff; padding: 0; }
+            .container { box-shadow: none; border-radius: 0; width: 100%; padding: 8px; }
+            .upload-area, .search-area, .status { display: none !important; }
+            .table-container { max-height: none; overflow: visible; border: 0; }
+            table { width: 100%; table-layout: fixed; }
+            th, td { font-size: 7pt; padding: 2pt; white-space: normal; overflow-wrap: anywhere; }
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Excel → Google Sheets Database</h1>
 
-    <div class="upload-area">
+    <div class="upload-area hidden-upload">
         <h3>Upload Excel File (REPLACES Data in Google Sheets)</h3>
         <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" aria-label="Upload Excel or CSV file">
         <p>Supported formats: .xlsx, .xls, .csv — Use only to update data</p>
-        <div id="statusMsg" class="status"></div>
+        <div class="status hidden-status-placeholder" aria-hidden="true"></div>
     </div>
 
     <div class="search-area">
@@ -478,6 +495,7 @@
         <button id="clearDataBtn" class="btn-danger">Clear All Data</button>
         <button id="themeToggleBtn" class="btn-dark">🌙 Dark Mode</button>
     </div>
+    <div id="statusMsg" class="status"></div>
 
     <div class="table-container">
         <table id="dataTable">
@@ -613,6 +631,29 @@
         if (type === "number") return formatNumber(value);
         return value;
     }
+    function fitTableToPage() {
+        const table = document.getElementById("dataTable");
+        if (!table || !headers || headers.length === 0) return;
+        // Keep mobile card-style view untouched. Auto-fit sizing is for tablet/desktop only.
+        if (window.matchMedia("(max-width: 700px)").matches) {
+            table.style.removeProperty("--table-font-size");
+            return;
+        }
+        const availableWidth = table.parentElement ? table.parentElement.clientWidth : window.innerWidth;
+        const columnCount = Math.max(headers.length, 1);
+        const widthPerColumn = availableWidth / columnCount;
+        let fontSize;
+        if (widthPerColumn < 34) fontSize = "0.48rem";
+        else if (widthPerColumn < 46) fontSize = "0.54rem";
+        else if (widthPerColumn < 62) fontSize = "0.62rem";
+        else if (widthPerColumn < 84) fontSize = "0.72rem";
+        else fontSize = "0.86rem";
+        table.style.setProperty("--table-font-size", fontSize);
+    }
+    window.addEventListener("resize", fitTableToPage);
+    window.addEventListener("orientationchange", function () {
+        setTimeout(fitTableToPage, 250);
+    });
 
     window.addEventListener("load", function () {
         loadDataFromSheet();
@@ -739,6 +780,7 @@
             });
             tableBody.appendChild(tr);
         });
+        requestAnimationFrame(fitTableToPage);
     }
 
     // SEARCH BEHAVIOR:
@@ -808,6 +850,7 @@
 
     function showStatus(text, type) {
         const el = document.getElementById("statusMsg");
+        if (!el) return;
         el.textContent = text;
         el.className = "status " + type;
     }
